@@ -1,0 +1,35 @@
+
+
+
+Kolla att @Namespace är det första som presenteras i filen (Om den finns) annars, kasta _TS_error
+
+
+Version mismatch etc
+
+Förberedelse för nestade listor finns, verkställ dem med funktionen (Kolla RE.au3) och Lists i parser
+
+
+
+##########
+Gör så att EzArray får samma effekt som $re_func_closure
+
+
+här är lite gajdlajns
+
+(?mi)(\(|,)\h*\n*(\[.*\])\h*\n*(\)|,)
+
+
+$main = func()
+
+$MyMethod().Test("First",[[]d])
+
+$MySecondMethod([])
+
+$WontWork([]
+
+$WontWork2[])
+
+
+	return [1,2,3,4,5]
+endfunc
+

@@ -1,0 +1,4 @@
+backup/
+logs/*
+Tests/
+TS.opt.ini
