@@ -664,12 +664,12 @@ Func _TS_Compose_MagicProperties(ByRef $item, ByRef $aMethods, ByRef $aPropertie
 	if IsArray($aMethods) Then
 		Local $aMethods_len = UBound($aMethods)
 		if Not $aMethods_len Then Return Null; Do nada
-		Local $sRet = StringFormat("[[%d, 'Name', 'Parameters']", $aMethods_len)
+		Local $sRet = StringFormat("[[%d, 'Scope','Name', 'Parameters']", $aMethods_len)
 
 		For $i = 0 To $aMethods_len - 1
 			Local $cur = $aMethods[$i]
 			Local $oTmp = _TS_getFuncStructureAsObj($cur)
-			$sRet &= StringFormat(",[%d, '%s', '%s']", $i + 1, $oTmp.cleanName, StringReplace($oTmp.params, "'", '"'))
+			$sRet &= StringFormat(",[%d, '%s', '%s', '%s']", $i + 1, (isEmpty($oTmp.keyword) ? "@Public" : $oTmp.keyword), $oTmp.cleanName, StringReplace($oTmp.params, "'", '"'))
 		Next
 
 		$sRet &= "]"
@@ -679,7 +679,7 @@ Func _TS_Compose_MagicProperties(ByRef $item, ByRef $aMethods, ByRef $aPropertie
 	if IsArray($aProperties) Then
 		Local $aProperties_len = UBound($aProperties)
 		if Not $aProperties_len Then Return Null; Do nada
-		Local $sRet = StringFormat("[[%d, 'Type', 'Name', 'Default']", $aProperties_len)
+		Local $sRet = StringFormat("[[%d, 'Scope', 'Name', 'Default']", $aProperties_len)
 
 		For $i = 0 To $aProperties_len - 1 Step +3
 			Local $cur = $aProperties[$i]
