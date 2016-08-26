@@ -97,13 +97,15 @@ Func GuiOpt_Main()
 	GUICtrlCreateTabItem("Hotkeys")
 	$gui_Hotkeys_btn_change = GUICtrlCreateButton("Change", 10, 202, 75, 25)
 	$gui_Hotkeys_btn_reset_to_default = GUICtrlCreateButton("Reset to default", 178, 202, 91, 25)
-	$gui_Hotkeys_list_hotkeys = GUICtrlCreateListView("", 8, 32, 258, 166)
+	$gui_Hotkeys_list_hotkeys = GUICtrlCreateListView("Name|Key", 8, 32, 258, 166)
 	GUICtrlCreateTabItem("Misc")
 	$gui_Main_btn_install_calltips = GUICtrlCreateButton("Install Calltips to scite", 8, 32, 155, 25)
 	GUICtrlCreateTabItem("")
 	GUISetState(@SW_SHOW)
 
 
+	; Set data
+	GUICtrlSetData($gui_Main_Input_CmdLine, IniRead($_TS_OptFile, "misc", "CmdLine", ""))
 	; Exit window
 	GUISetOnEvent($GUI_EVENT_CLOSE, "GuiOpt_Main_Exit")
 	;Set hotkey
@@ -305,7 +307,7 @@ EndFunc
 Func GuiOpt_Main_SetHotkey()
 	Local $ListVeiw_Index = _GUICtrlListView_GetSelectedIndices($gui_Hotkeys_list_hotkeys)
 	Local $HotkeyArr_Index = $ListVeiw_Index + 1
-	Local $inputBox_neWHotkey = InputBox($_TS_AppTitle, StringFormat("Enter a new hotkey for '%s'. Rember to use {} if you are going to use F-keys", $_SCITE_HotkeyCollectionDisplayNames[$HotkeyArr_Index]), $_SCITE_HotkeyCollectionKeys[$HotkeyArr_Index])
+	Local $inputBox_neWHotkey = InputBox($_TS_AppTitle, StringFormat("Enter a new hotkey for '%s'. Rember to use {} if you are going to use F-keys", $_SCITE_HotkeyCollectionDisplayNames[$HotkeyArr_Index]), $_SCITE_HotkeyCollectionKeys[$HotkeyArr_Index], "", -1, -1, Default, Default, 0, $Gui_Main)
 	If @error Then
 		MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Hotkey change aborted", 5, $Gui_Main)
 	Else
