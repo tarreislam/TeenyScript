@@ -118,7 +118,8 @@ Global Const $re_list_set = '(?i)\$(' & $re_AcceptedVarName & '|' & $re_Accepted
 
 ;	$MyObject{"key"}		Execute($MyObject & ".key")
 ;	$key.list{"key"}		Execute($key.list & ".key")
-Global Const $re_list_get = '(?i)\$(' & $re_AcceptedVarName & '|' & $re_AcceptedNameComObject & ')\{(.*)\}'
+Global Const $re_list_get = '(?i)\$(' & $re_AcceptedVarName & '|' & $re_AcceptedNameComObject & ')\{([^}]+)\}'
+
 
 ;	@Private $this.name = {} (Aslo works with content)
 ;							$AOclass.AddProperty("name", $ELSCOPE_PUBLIC, _AutoitObject_Create())
