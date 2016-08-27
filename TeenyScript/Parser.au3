@@ -453,6 +453,9 @@ Func _TS_Compose_Lists(ByRef $item); {}
 		Local $Key = $aRe_list_set[$i + 1]
 		Local $Val = $aRe_list_set[$i + 2]
 
+		; Throw error if KEY is containing bogus stuff
+		If Not StringRegExp(StringRegExpReplace($Key, '\"(.*)\"', "$1"), $re_parseErr_listKey) Then Return _TS_SetError(1, 0, 0, "[_TS_Compose_Lists]: Error parsing list %s. List keys may only contain a-z, 0-9 and _ or $Variables", $Key)
+
 		If StringRegExp($identifier, "\.") Then ; Detect $var.etc and create a fake var
 			Local $fakeVar = $_name_List & $i
 			$Re2Use = "" & _
@@ -472,8 +475,12 @@ Func _TS_Compose_Lists(ByRef $item); {}
 
 	For $i = 0 to UBound($aRe_list_get) - 1 Step + 2
 
-		; Check if string has to start with " and end with "
-		Local $ciS = StringRegExp($aRe_list_get[$i + 1], "^(?:(?:" & '\"' & "|\')(.*)(?:" & '\"' & "|\'))", 3)
+		Local $key = $aRe_list_get[$i + 1]
+
+		If Not StringRegExp(StringRegExpReplace($Key, '\"(.*)\"', "$1"), $re_parseErr_listKey) Then Return _TS_SetError(1, 0, 0, "[_TS_Compose_Lists]: Error parsing list %s. List keys may only contain a-z, 0-9 and _ or $Variables", $Key)
+
+		; Check if key has to start with " and end with "
+		Local $ciS = StringRegExp($key, "^(?:(?:" & '\"' & "|\')(.*)(?:" & '\"' & "|\'))", 3)
 
 		; This will help us not use Execute on signle strings
 		if IsArray($ciS) Then
@@ -484,9 +491,6 @@ Func _TS_Compose_Lists(ByRef $item); {}
 
 		$item.content = StringRegExpReplace($item.content, $re_list_get, $re2Use, 1)
 	Next
-
-
-
 
 EndFunc
 

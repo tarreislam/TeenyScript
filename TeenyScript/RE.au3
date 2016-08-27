@@ -140,3 +140,12 @@ Global Const $re_TS_Debug = '(?si)#DEBUG(.+)'; This will copy raw after #DEBUG (
 ;  ---------------------------------------------------------
 Global Const $re_SciTE_TSpath = "( - SciTE.*)"
 
+
+
+;  ---------------------------------------------------------
+; |				Parsing error RE							|
+;  ---------------------------------------------------------
+
+; ~ List keys can only contain a-z, 0-9, _, $variable, $com.object
+Global Const $re_parseErr_listKey = "(?i)(?:^[0-9a-z_]+$|\$" & $re_AcceptedNameComObject & ")"
+
