@@ -639,7 +639,14 @@ Func _TS_Compose_finalFunction(ByRef $item, const $oNamespace)
 		; Return the class with its constructor-method as the final object.
 		if $item.hasConstructor Then
 			; The params passed to the class, should be passed to the constructor instantly
-			$item.content &= @CRLF & StringFormat("Return $%s.Object.%s(%s)", $_name_AOClass, $item.ConstructorName, $item.params)
+			; But first we need to adjust the parameters so we dont pass the default variables and make bool comparisons by mistake x)
+			Local $sStrippedParams = ""
+			Local $aStrippedParams = StringRegExp($item.params, "(?i)\$" & $re_AcceptedVarName, 3)
+			If IsArray($aStrippedParams) Then
+				$sStrippedParams = _ArrayToString($aStrippedParams, ",")
+			EndIf
+
+			$item.content &= @CRLF & StringFormat("Return $%s.Object.%s(%s)", $_name_AOClass, $item.ConstructorName, $sStrippedParams)
 		Else
 			;Just return the ao Class object
 			$item.content &= @CRLF & StringFormat("Return $%s.Object", $_name_AOClass)
