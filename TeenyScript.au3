@@ -38,6 +38,7 @@ Opt("GUIOnEventMode",1)
 #include "TeenyScript\SciTe.au3"
 #include "TeenyScript\Parser.au3"
 #include "TeenyScript\Hotkeys.au3"
+#include "TeenyScript\Project.au3"
 #include "TeenyScript\GuiOpt.au3"
 
 

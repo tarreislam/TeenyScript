@@ -36,7 +36,7 @@ Global Const $___MacroZzzZz = @CRLF & @CRLF & "~Avilable macros " & @CRLF & @CRL
 Global $Gui_Main, $gui_Project_Settings, $gui_Main_Input_CmdLine, $gui_Main_btn_create_new_project, $gui_Main_btn_edit_project, $gui_Hotkeys_list_hotkeys, $gui_Hotkeys_btn_change, $gui_Hotkeys_btn_reset_to_default, _
 $gui_Main_btn_install_calltips, $gui_Project_Settings_radio_32_bit, $gui_Project_Settings_radio_64_bit, $gui_Project_Settings_radio_32_and_64_bit, $gui_Project_Settings_input_project_name, _
 $gui_Project_Settings_input_project_version, $gui_Project_Settings_btn_output_dir, $gui_Project_Settings_input_output_dir, $gui_Project_Settings_btn_icon, $gui_Project_Settings_input_icon, _
-$gui_Project_Settings_btn_save, $gui_Project_Settings_input_project_copyright_holder
+$gui_Project_Settings_btn_save, $gui_Project_Settings_input_project_copyright_holder, $gui_Project_Settings_radio_gui, $gui_Project_Settings_radio_console
 ; When exiting from the main function
 Func GuiOpt_Main_Exit()
 	Local $_GET_Main_Input_CmdLine = GUICtrlRead($gui_Main_Input_CmdLine)
@@ -46,40 +46,6 @@ Func GuiOpt_Main_Exit()
 	Return GuiOpt_Exit()
 EndFunc
 
-Func GuiOpt_Project_Settings_Save()
-	Local $Warnings = 0
-	Local Const $getFromFilepath_basedir = getFromFilepath_basedir(_SciTe_getOpenFileName())
-	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
-	If Not FileExists($_TS_ProjectFile) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Failed to save in 'TS.project.ini', make sure SciTE is focused on the main file that co-exists with the TS.project.ini file", 0, $gui_Project_Settings)
-
-	;Save arch (Nothing can go wrong here)
-	If GUICtrlRead($gui_Project_Settings_radio_32_bit) == $GUI_CHECKED Then IniWrite($_TS_ProjectFile, "build", "arch", "32")
-	If GUICtrlRead($gui_Project_Settings_radio_64_bit) == $GUI_CHECKED Then IniWrite($_TS_ProjectFile, "build", "arch", "64")
-	If GUICtrlRead($gui_Project_Settings_radio_32_and_64_bit) == $GUI_CHECKED Then IniWrite($_TS_ProjectFile, "build", "arch", "96")
-	If isEmpty(GUICtrlRead($gui_Project_Settings_input_project_name)) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "The project name may not be empty")
-	If StringRight(GUICtrlRead($gui_Project_Settings_input_output_dir), 1) == "\" Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "The Output dir may not end with an backslash '\'")
-
-	IniWrite($_TS_ProjectFile, "main", "name", GUICtrlRead($gui_Project_Settings_input_project_name))
-	IniWrite($_TS_ProjectFile, "main", "ver", GUICtrlRead($gui_Project_Settings_input_project_version))
-	IniWrite($_TS_ProjectFile, "main", "copyright", GUICtrlRead($gui_Project_Settings_input_project_copyright_holder))
-
-	IniWrite($_TS_ProjectFile, "build", "dir", GUICtrlRead($gui_Project_Settings_input_output_dir))
-	IniWrite($_TS_ProjectFile, "build", "icon", GUICtrlRead($gui_Project_Settings_input_icon))
-
-	; Generate warning if the directory dosent exist (Dont prompt it as an error)
-	Local Const $oProjectSettings = _TS_Project_getFinalProjectSettings($_TS_ProjectFile, $getFromFilepath_basedir)
-
-	If Not FileExists($oProjectSettings.dir) Then
-		$Warnings+=1
-		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Warning! '%s' the directory '%s' does not exist yet.", GUICtrlRead($gui_Project_Settings_input_output_dir), $oProjectSettings.dir), 0, $Gui_Main)
-	EndIf
-	If Not FileExists($oProjectSettings.icon) Then
-		$Warnings+=1
-		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Warning! '%s' the icon '%s' does not exist yet.", GUICtrlRead($gui_Project_Settings_input_icon), $oProjectSettings.icon), 0, $Gui_Main)
-	EndIf
-
-	MsgBox(($Warnings ? $MB_ICONWARNING : $MB_ICONINFORMATION), $_TS_AppTitle, "Project settings updated " & ($Warnings ? StringFormat("with %d warnings", $Warnings) :  "successfully!"), 0, $gui_Project_Settings)
-EndFunc
 
 Func GuiOpt_Exit()
 	GUIDelete(@GUI_WinHandle)
@@ -170,49 +136,125 @@ EndFunc
 #EndRegion Misc
 
 #Region Project related
+
+Func GuiOpt_Project_Settings_Save()
+	Local $Warnings = 0
+	Local Const $getFromFilepath_basedir = getFromFilepath_basedir(_SciTe_getOpenFileName())
+	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
+	If Not FileExists($_TS_ProjectFile) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Failed to save in 'TS.project.ini', make sure SciTE is focused on the main file that co-exists with the TS.project.ini file", 0, $gui_Project_Settings)
+
+
+	Local $main_name = GUICtrlRead($gui_Project_Settings_input_project_name), _
+	 $main_ver = GUICtrlRead($gui_Project_Settings_input_project_version), _
+	 $main_copyright = GUICtrlRead($gui_Project_Settings_input_project_copyright_holder), _
+	 $build_arch, _ ; Defined below
+	 $build_dir = GUICtrlRead($gui_Project_Settings_input_output_dir), _
+	 $build_icon = GUICtrlRead($gui_Project_Settings_input_icon), _
+	 $build_type; gui \ console
+
+	If isEmpty($main_name) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "The project name may not be empty", 0, $gui_Project_Settings)
+	If StringRight($build_dir, 1) == "\" Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "The Output dir may not end with an backslash '\'", 0, $gui_Project_Settings)
+
+	If Not StringRegExp($main_ver, "^[0-9.]+$") Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("The project version '%s' may only contain numbers and dots", $main_ver), 0, $gui_Project_Settings)
+	If StringRegExp($main_name, '\"') Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("The project name '%s' may not contain ''", $main_name), 0, $gui_Project_Settings)
+	If StringRegExp($main_copyright, '\"') Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("The copyright holder '%s' may not contain ''", $main_copyright), 0, $gui_Project_Settings)
+	If StringRegExp($build_dir, '\"') Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("The project icon '%s' may not contain ''", $build_dir), 0, $gui_Project_Settings)
+	If StringRegExp($build_icon, '\"') Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("The build directory '%s' may not contain ''", $build_icon), 0, $gui_Project_Settings)
+
+
+	If GUICtrlRead($gui_Project_Settings_radio_gui) == $GUI_CHECKED Then $build_type = "gui"
+	If GUICtrlRead($gui_Project_Settings_radio_console) == $GUI_CHECKED Then $build_type = "console"
+
+	If GUICtrlRead($gui_Project_Settings_radio_32_bit) == $GUI_CHECKED Then $build_arch = "32"
+	If GUICtrlRead($gui_Project_Settings_radio_64_bit) == $GUI_CHECKED Then $build_arch = "64"
+	If GUICtrlRead($gui_Project_Settings_radio_32_and_64_bit) == $GUI_CHECKED Then $build_arch = "96"
+
+
+	_TS_Project_setSettings($_TS_ProjectFile, _
+	$main_name, _
+	$main_ver, _
+	$main_copyright, _
+	$build_arch, _
+	$build_dir, _
+	$build_icon, _
+	$build_type)
+
+	; Generate warning if the directory dosent exist (Dont prompt it as an error)
+	Local Const $oProjectSettings = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir)
+
+	If Not FileExists($oProjectSettings.dir) Then
+		$Warnings+=1
+		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Warning! '%s' the directory '%s' does not exist yet.", GUICtrlRead($gui_Project_Settings_input_output_dir), $oProjectSettings.dir), 0, $gui_Project_Settings)
+	EndIf
+	If Not FileExists($oProjectSettings.icon) Then
+		$Warnings+=1
+		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Warning! '%s' the icon '%s' does not exist yet.", GUICtrlRead($gui_Project_Settings_input_icon), $oProjectSettings.icon), 0, $gui_Project_Settings)
+	EndIf
+
+	MsgBox(($Warnings ? $MB_ICONWARNING : $MB_ICONINFORMATION), $_TS_AppTitle, "Project settings updated " & ($Warnings ? StringFormat("with %d warnings", $Warnings) :  "successfully!"), 0, $gui_Project_Settings)
+EndFunc
+
 Func GuiOpt_Project_Settings_Edit_Project()
 	If IsHWnd($gui_Project_Settings) Then Return WinActivate($gui_Project_Settings)
 	; Check if we can find that damn file xD
-	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, getFromFilepath_basedir(_SciTe_getOpenFileName()))
+	Local Const $getFromFilepath_basedir = getFromFilepath_basedir(_SciTe_getOpenFileName())
+	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
 
 	If Not FileExists($_TS_ProjectFile) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Could not find 'TS.project.ini', make sure SciTE is focused on the main file that co-exists with the TS.project.ini file", 0, $gui_Project_Settings)
 
-	$gui_Project_Settings = GUICreate("Edit Project Settings", 241, 412, 691, 390)
-	GUICtrlCreateGroup("Architecture  options", 8, 8, 225, 41)
-	$gui_Project_Settings_radio_32_bit = GUICtrlCreateRadio("32 bit", 16, 24, 57, 17)
-	$gui_Project_Settings_radio_64_bit = GUICtrlCreateRadio("64 bit", 80, 24, 49, 17)
-	$gui_Project_Settings_radio_32_and_64_bit = GUICtrlCreateRadio("32 && 64 bit", 136, 24, 81, 17)
+	$gui_Project_Settings = GUICreate("Edit Project Settings", 474, 241, 691, 390)
+	GUICtrlCreateGroup("Architecture  options", 240, 8, 225, 41)
+	$gui_Project_Settings_radio_32_bit = GUICtrlCreateRadio("32 bit", 248, 24, 57, 17)
+	$gui_Project_Settings_radio_64_bit = GUICtrlCreateRadio("64 bit", 312, 24, 49, 17)
+	$gui_Project_Settings_radio_32_and_64_bit = GUICtrlCreateRadio("32 && 64 bit", 368, 24, 81, 17)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
-	GUICtrlCreateGroup("File Details", 8, 56, 225, 161)
+	GUICtrlCreateGroup("File Details", 8, 56, 225, 177)
 	GUICtrlCreateLabel("Project name", 16, 72, 66, 17)
 	$gui_Project_Settings_input_project_name = GUICtrlCreateInput("", 16, 88, 209, 21)
-	GUICtrlCreateLabel("Project version", 16, 112, 74, 17)
-	$gui_Project_Settings_input_project_version = GUICtrlCreateInput("", 16, 136, 209, 21)
-	GUICtrlCreateLabel("Copyright holder", 16, 160, 80, 17)
-	$gui_Project_Settings_input_project_copyright_holder = GUICtrlCreateInput("", 16, 184, 209, 21)
+	GUICtrlCreateLabel("Project version", 16, 120, 74, 17)
+	$gui_Project_Settings_input_project_version = GUICtrlCreateInput("", 16, 144, 209, 21)
+	GUICtrlCreateLabel("Copyright holder", 16, 176, 80, 17)
+	$gui_Project_Settings_input_project_copyright_holder = GUICtrlCreateInput("", 16, 200, 209, 21)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
-	GUICtrlCreateGroup("Misc", 8, 224, 225, 145)
-	$gui_Project_Settings_btn_output_dir = GUICtrlCreateButton("&Output dir", 16, 248, 75, 25)
-	$gui_Project_Settings_input_output_dir = GUICtrlCreateInput("", 16, 280, 209, 21)
-	$gui_Project_Settings_btn_icon = GUICtrlCreateButton("&Icon", 16, 304, 75, 25)
-	$gui_Project_Settings_input_icon = GUICtrlCreateInput("", 16, 336, 209, 21)
+	GUICtrlCreateGroup("Misc", 240, 56, 225, 137)
+	$gui_Project_Settings_btn_output_dir = GUICtrlCreateButton("&Output dir", 248, 72, 75, 25)
+	$gui_Project_Settings_input_output_dir = GUICtrlCreateInput("", 248, 104, 209, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_READONLY))
+	$gui_Project_Settings_btn_icon = GUICtrlCreateButton("&Icon", 248, 128, 75, 25)
+	$gui_Project_Settings_input_icon = GUICtrlCreateInput("", 248, 160, 209, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_READONLY))
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
-	$gui_Project_Settings_btn_save = GUICtrlCreateButton("Verify && Apply", 136, 376, 91, 25)
+	$gui_Project_Settings_btn_save = GUICtrlCreateButton("Verify && Apply", 240, 200, 219, 33)
+	GUICtrlCreateGroup("Type of application ", 8, 8, 225, 41)
+	$gui_Project_Settings_radio_gui = GUICtrlCreateRadio("Gui", 16, 24, 57, 17)
+	$gui_Project_Settings_radio_console = GUICtrlCreateRadio("Console", 80, 24, 81, 17)
+	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	; Set data
-	GUICtrlSetData($gui_Project_Settings_input_project_name, IniRead($_TS_ProjectFile, "main", "name", "Unkown"))
-	GUICtrlSetData($gui_Project_Settings_input_project_version, IniRead($_TS_ProjectFile, "main", "ver", "Unkown"))
-	GUICtrlSetData($gui_Project_Settings_input_project_copyright_holder, IniRead($_TS_ProjectFile, "main", "copyright", @UserName))
-	GUICtrlSetData($gui_Project_Settings_input_output_dir, IniRead($_TS_ProjectFile, "build", "dir", "Unkown"))
-	GUICtrlSetData($gui_Project_Settings_input_icon, IniRead($_TS_ProjectFile, "build", "icon", "Unkown"))
+	; Get project data
+	Local $oProject = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir, False)
+	GUICtrlSetData($gui_Project_Settings_input_project_name, $oProject.name)
+	GUICtrlSetData($gui_Project_Settings_input_project_version, $oProject.ver)
+	GUICtrlSetData($gui_Project_Settings_input_project_copyright_holder, $oProject.copyright)
+	GUICtrlSetData($gui_Project_Settings_input_output_dir, $oProject.dir)
+	GUICtrlSetData($gui_Project_Settings_input_icon, $oProject.icon)
 	; Determine options for Arch
-	Switch IniRead($_TS_ProjectFile, "build", "arch", "32"); Will default 32 in WCS
+	Switch $oProject.arch; Will default 32 in WCS
 		Case '32'
 			GUICtrlSetState($gui_Project_Settings_radio_32_bit, $GUI_CHECKED)
 		Case '64'
 			GUICtrlSetState($gui_Project_Settings_radio_64_bit, $GUI_CHECKED)
 		Case '96'
 			GUICtrlSetState($gui_Project_Settings_radio_32_and_64_bit, $GUI_CHECKED)
+		Case Default
+			GUICtrlSetState($gui_Project_Settings_radio_32_bit, $GUI_CHECKED)
+	EndSwitch
+	; Determine build type
+
+	Switch $oProject.type
+		Case "gui"
+			GUICtrlSetState($gui_Project_Settings_radio_gui, $GUI_CHECKED)
+		Case "console"
+			GUICtrlSetState($gui_Project_Settings_radio_console, $GUI_CHECKED)
+		Case Else
+			GUICtrlSetState($gui_Project_Settings_radio_gui, $GUI_CHECKED)
 	EndSwitch
 	GUISetState(@SW_SHOW)
 	; Exit window && Apply

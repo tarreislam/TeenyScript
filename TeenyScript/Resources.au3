@@ -26,7 +26,7 @@
 #ce
 ; ~ TS related resources
 Global Const $_TS_AppTitle = "TeenyScript"
-Global Const $_TS_AppVer = "1.0.0";Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
+Global Const $_TS_AppVer = "1.1.0";Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
 Global Const $_TS_FullAppTitle = StringFormat("%s %s", $_TS_AppTitle, $_TS_AppVer)
 Global Const $_TS_OptFile = @ScriptDir & "\TS.opt.ini"
 Global Const $_TS_Dependencies_Dir = @ScriptDir & "\TeenyScript\_Dependencies_"; AutoitObject only atm
@@ -191,32 +191,6 @@ Func _TS_ResetResources()
 	$_resource_bLazyLoad = False
 EndFunc
 
-Func _TS_Project_getFinalProjectSettings($_TS_ProjectFile, $getFromFilepath_basedir)
-	Local Const $main_name = IniRead($_TS_ProjectFile, "main", "name", "Unkown")
-	Local Const $main_ver = IniRead($_TS_ProjectFile, "main", "ver", "Unkown")
-	; parse directory macros
-	Local Const $build_arch = IniRead($_TS_ProjectFile, "build", "arch", "Unkown")
-	Local Const $build_dir = _TS_Project_parseMacrostring(IniRead($_TS_ProjectFile, "build", "dir", "Unkown"),$build_arch, $main_name, $main_ver, $getFromFilepath_basedir)
-	Local Const $build_icon = _TS_Project_parseMacrostring(IniRead($_TS_ProjectFile, "build", "icon", "Unkown"),$build_arch, $main_name, $main_ver, $getFromFilepath_basedir)
-
-
-	Local $oRet = _AutoItObject_Create()
-	; Main
-	_AutoItObject_AddProperty($oRet, "name", $ELSCOPE_PUBLIC, $main_name)
-	_AutoItObject_AddProperty($oRet, "ver", $ELSCOPE_PUBLIC, $main_ver)
-	; Build
-	_AutoItObject_AddProperty($oRet, "dir", $ELSCOPE_PUBLIC, $build_dir)
-	_AutoItObject_AddProperty($oRet, "icon", $ELSCOPE_PUBLIC, $build_icon)
-	_AutoItObject_AddProperty($oRet, "arch", $ELSCOPE_PUBLIC, $build_arch)
-	Return $oRet
-EndFunc
-
-Func _TS_Project_parseMacrostring($sString, $build_arch, $main_name, $main_ver, $project_dir)
-	$sString = StringReplace($sString, "%main.name%", $main_name)
-	$sString = StringReplace($sString, "%main.ver%", $main_ver)
-	$sString = StringReplace($sString, "%build.arch%", $build_arch)
-	Return StringReplace($sString, "%project.dir%", $project_dir)
-EndFunc
 
 #Region Error Related
 Func _TS_SetError($iCode, $iExtended, $mReturn, $sText = "", $p1 = "", $p2 = "", $p3 = "")
@@ -279,7 +253,7 @@ EndFunc
 
 Func _TS_Init()
 	Sleep(500)
-	SendSciTE_Command() ; Clear Output pane "IDM_CLEAROUTPUT"
+	_Scite_SendMessage() ; Clear Output pane "IDM_CLEAROUTPUT"
 	$ConsoleWrite(" _____                 _____         _     _   ", "o")
 	$ConsoleWrite("|_   _|___ ___ ___ _ _|   __|___ ___|_|___| |_ ", "o")
   	$ConsoleWrite("  | | | -_| -_|   | | |__   |  _|  _| | . |  _| ", "o")
@@ -294,10 +268,8 @@ Func _TS_Init()
 	_TS_HotkeyManager(True)
 	; Register destructor
 	OnAutoItExitRegister("_TS_Exit_Auto")
-
 	; Start main loop
 	AdlibRegister("_TS_ADLIB", 150)
-
 EndFunc
 
 
@@ -322,7 +294,7 @@ Func _TS_ADLIB()
 EndFunc
 
 Func _TS_Exit_Auto()
-	SendSciTE_Command() ; Clear Output pane "IDM_CLEAROUTPUT"
+	_Scite_SendMessage() ; Clear Output pane "IDM_CLEAROUTPUT"
 	$ConsoleWrite("%s closed unexpected @ %s:%s:%s", "r", $_TS_AppTitle, @HOUR, @MIN, @SEC)
 EndFunc
 

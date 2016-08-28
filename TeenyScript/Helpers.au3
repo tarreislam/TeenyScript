@@ -134,18 +134,3 @@ Func STR_PAD($str, $direction = $STR_PAD_RIGHT, $MaxWidth = 47, $fill = "#")
 
 	Return $sRet
 EndFunc
-
-; Send commands to SciTE while its running (Shoutout to Jos @ AutoitScript forum)
-Func SendSciTE_Command($sCmd = "menucommand:420")
-    Local $Scite_hwnd = WinGetHandle("DirectorExtension")
-    Local $WM_COPYDATA = 74
-    Local $CmdStruct = DllStructCreate('Char[' & StringLen($sCmd) + 1 & ']')
-    DllStructSetData($CmdStruct, 1, $sCmd)
-    Local $COPYDATA = DllStructCreate('Ptr;DWord;Ptr')
-    DllStructSetData($COPYDATA, 1, 1)
-    DllStructSetData($COPYDATA, 2, StringLen($sCmd) + 1)
-    DllStructSetData($COPYDATA, 3, DllStructGetPtr($CmdStruct))
-    DllCall('User32.dll', 'None', 'SendMessage', 'HWnd', $Scite_hwnd, _
-            'Int', $WM_COPYDATA, 'HWnd', 0, _
-            'Ptr', DllStructGetPtr($COPYDATA))
-EndFunc   ;==>SendSciTE_Command

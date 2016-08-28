@@ -41,25 +41,65 @@ Func _SciTe_runFile($sFile, $sDisplayFile)
 EndFunc   ;==>_SciTe_runFile
 
 
-Func _SciTe_compileFile($sFile, $cmdLine_OUT = False, $cmdLine_ICON = False, $cmdLine_ARCH = "32", $cmdLine_ProjectName = "Unnamed TeenyScript", $cmdLine_ProjectVersion = $_TS_AppVer, $cmdLine_Copyright = @UserName)
-	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Compiling '%s'", ($cmdLine_OUT ? StringFormat("%s.exe", $cmdLine_OUT, $cmdLine_ARCH) : StringReplace($sFile, ".au3", ".exe") ))
+Func _SciTe_compileFile($sFile, $cmdLine_OUT = False, $cmdLine_ICON = False, $cmdLine_ARCH = "32", $cmdLine_ProjectName = "Unnamed TeenyScript", $cmdLine_ProjectVersion = $_TS_AppVer, $cmdLine_Copyright = @UserName, $cmdLine_Type = "gui")
+	If $cmdLine_ARCH == "96" Then
+		_SciTe_compileFile($sFile, $cmdLine_OUT, $cmdLine_ICON, "32", $cmdLine_ProjectName, $cmdLine_ProjectVersion, $cmdLine_Copyright, $cmdLine_Type)
+		_SciTe_compileFile($sFile, $cmdLine_OUT, $cmdLine_ICON, "64", $cmdLine_ProjectName, $cmdLine_ProjectVersion, $cmdLine_Copyright, $cmdLine_Type)
+		Return True
+	EndIf
+
+	$cmdLine_OUT = StringFormat("%s\%s_x%d.exe", $cmdLine_OUT, $cmdLine_ProjectName, $cmdLine_ARCH)
+
+
+	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Compiling '%s'", ($cmdLine_OUT ? $cmdLine_OUT : StringReplace($sFile, ".au3", ".exe") ))
+
 
 	;What program to use
 	Local $program = $cmdLine_ARCH == "32" ? $_AU3_AU2EXE : $_AU3_AU2EXE_64
 
-	$cmdLine_OUT = $cmdLine_OUT ? StringFormat(' /OUT "%s.exe"', $cmdLine_OUT, $cmdLine_ARCH) : ""
+	$filedescription = $cmdLine_ProjectName ? StringFormat(' /FILEDESCRIPTION "%s"', $cmdLine_ProjectName) : ""
+	$originalFilename = StringFormat(' /originalfilename "%s_x%d.exe"', $cmdLine_ProjectName, $cmdLine_ARCH)
+	$cmdLine_OUT = $cmdLine_OUT ? StringFormat(' /OUT "%s"', $cmdLine_OUT) : ""
 	$cmdLine_ICON = $cmdLine_ICON ? StringFormat(' /ICON "%s"', $cmdLine_ICON) : ""
 	$cmdLine_ARCH = $cmdLine_ARCH <> "32" ? StringFormat(' /x%d', $cmdLine_ARCH) : ""
 	$cmdLine_ProjectName = $cmdLine_ProjectName ? StringFormat(' /PRODUCTNAME "%s"', $cmdLine_ProjectName) : ""
 	$cmdLine_ProjectVersion = $cmdLine_ProjectVersion ? StringFormat(' /PRODUCTVERSION "%s"', $cmdLine_ProjectVersion) : ""
-	$cmdLine_Copyright = $cmdLine_Copyright ? StringFormat(' /legalcopyright "MajkroShaft"', $cmdLine_Copyright) : ""
+	$cmdLine_Copyright = $cmdLine_Copyright ? StringFormat(' /legalcopyright "%s"', $cmdLine_Copyright) : ""
+	; @autoitver : $_TS_AppVer
+	$fileversion = StringFormat(' /fileversion "%s"', $_TS_AppVer)
 
 	$ConsoleWrite("Compiling using: '%s'", "g", $program)
-	RunWait(StringFormat('%s /IN "%s"%s%s%s%s%s', $program, $sFile, $cmdLine_OUT, $cmdLine_ICON, $cmdLine_ARCH, $cmdLine_ProjectName, $cmdLine_ProjectVersion))
+	RunWait(StringFormat('%s /IN "%s"%s%s%s%s%s%s%s%s%s /%s', $program, $sFile, $cmdLine_OUT, _
+	$cmdLine_ICON, _
+	$cmdLine_ARCH, _
+	$cmdLine_ProjectName, _
+	$cmdLine_ProjectVersion, _
+	$cmdLine_Copyright, _
+	$filedescription, _
+	$originalFilename, _
+	$fileversion, _
+	$cmdLine_Type), "", Default, $STDIN_CHILD)
 	_SciTe_SexyTimePassedRauR($timer)
 
 	Return True
 EndFunc   ;==>_SciTe_compileFile
+
+; Send commands to SciTE while its running (Shoutout to Jos @ AutoitScript forum)
+Func _Scite_SendMessage($sCmd = "menucommand:420")
+    Local $Scite_hwnd = WinGetHandle("DirectorExtension")
+    Local $WM_COPYDATA = 74
+    Local $CmdStruct = DllStructCreate('Char[' & StringLen($sCmd) + 1 & ']')
+    DllStructSetData($CmdStruct, 1, $sCmd)
+    Local $COPYDATA = DllStructCreate('Ptr;DWord;Ptr')
+    DllStructSetData($COPYDATA, 1, 1)
+    DllStructSetData($COPYDATA, 2, StringLen($sCmd) + 1)
+    DllStructSetData($COPYDATA, 3, DllStructGetPtr($CmdStruct))
+    DllCall('User32.dll', 'None', 'SendMessage', 'HWnd', $Scite_hwnd, _
+            'Int', $WM_COPYDATA, 'HWnd', 0, _
+            'Ptr', DllStructGetPtr($COPYDATA))
+EndFunc   ;==>SendSciTE_Command
+
+
 
 Func _SciTe_SexyTimePassedRauR_START($sText, $p1 = "", $p2 = "", $p3 = "")
 	$ConsoleWrite($sText, "b", $p1, $p2, $p3)

@@ -55,18 +55,19 @@ Func _TS_HOTKEY_BUILD_EXE()
 
 		Local Const $getFromFilepath_basedir = getFromFilepath_basedir(_SciTe_getOpenFileName())
 		Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
-		Local Const $oProjectSettings = _TS_Project_getFinalProjectSettings($_TS_ProjectFile, $getFromFilepath_basedir)
+		Local Const $oProjectSettings = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir)
 
-		If $oProjectSettings.arch == "96" Then
-			_SciTe_compileFile($aFile[0], StringFormat("%s\%s_x%d", $oProjectSettings.dir, $oProjectSettings.name, "32"), $oProjectSettings.icon, "32", $oProjectSettings.name, $oProjectSettings.ver)
-			_SciTe_compileFile($aFile[0], StringFormat("%s\%s_x%d", $oProjectSettings.dir, $oProjectSettings.name, "64"), $oProjectSettings.icon, "64", $oProjectSettings.name, $oProjectSettings.ver)
-		Else
-			_SciTe_compileFile($aFile[0], StringFormat("%s\%s_x%d", $oProjectSettings.dir, $oProjectSettings.name, $oProjectSettings.arch), $oProjectSettings.icon, $oProjectSettings.arch, $oProjectSettings.name, $oProjectSettings.ver)
-		EndIf
-
+		_SciTe_compileFile($aFile[0], _
+		$oProjectSettings.dir, _
+		$oProjectSettings.icon, _
+		$oProjectSettings.arch, _
+		$oProjectSettings.name, _
+		$oProjectSettings.ver, _
+		$oProjectSettings.copyright, _
+		$oProjectSettings.type)
 
 	Else
-		_SciTe_compileFile($aFile[0], $aFile[1])
+		_SciTe_compileFile($aFile[0])
 	EndIf
 
 	If Not FileDelete($aFile[0]) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $aFile[0]))
@@ -78,7 +79,7 @@ EndFunc
 
 Func _TS_HOTKEY_Exit()
 	OnAutoItExitUnRegister("_TS_Exit_Auto"); Remove destructor
-	SendSciTE_Command() ; Clear Output pane "IDM_CLEAROUTPUT"
+	_Scite_SendMessage() ; Clear Output pane "IDM_CLEAROUTPUT"
 	$ConsoleWrite("%s closed by user @ %s:%s:%s", "r", $_TS_AppTitle, @HOUR, @MIN, @SEC)
 	Exit
 EndFunc
