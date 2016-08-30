@@ -200,7 +200,7 @@ Func GuiOpt_Project_Settings_Edit_Project()
 
 	If Not FileExists($_TS_ProjectFile) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Could not find '%s', make sure SciTE is focused on the main file that co-exists with the '%s' file", $_TS_Project_Ts_PROJECT_INI, $_TS_Project_Ts_PROJECT_INI), 0, $Gui_Main)
 
-	$gui_Project_Settings = GUICreate("Edit Project Settings", 474, 241, 691, 390)
+	$gui_Project_Settings = GUICreate("Edit Project Settings", 474, 241, 691, 390, -1, -1, $Gui_Main)
 	GUICtrlCreateGroup("Architecture  options", 240, 8, 225, 41)
 	$gui_Project_Settings_radio_32_bit = GUICtrlCreateRadio("32 bit", 248, 24, 57, 17)
 	$gui_Project_Settings_radio_64_bit = GUICtrlCreateRadio("64 bit", 312, 24, 49, 17)
