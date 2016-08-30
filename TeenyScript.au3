@@ -41,7 +41,6 @@ Opt("GUIOnEventMode",1)
 #include "TeenyScript\Project.au3"
 #include "TeenyScript\GuiOpt.au3"
 
-
 #Region Pre-checks & warnings
 If @Compiled Then
 	MsgBox($MB_ICONERROR, $_TS_FullAppTitle, StringFormat("It is not recomended to compile %s, since it uses SciTE for console output...", $_TS_AppTitle))
@@ -61,7 +60,5 @@ EndIf
 
 _TS_Init()
 
-
 While Sleep(0)
-
 WEnd

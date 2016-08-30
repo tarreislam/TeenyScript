@@ -27,9 +27,10 @@
 #include-once
 Global $ConsoleWrite = _ConsoleWrite
 Global Enum $STR_PAD_LEFT, $STR_PAD_MID, $STR_PAD_RIGHT
+Global Const $_TS_Project_Console_log_dir = @ScriptDir & "\logs"
 
 Func _ConsoleWrite($sText, $c, $p1 = "", $p2 = "", $p3 = "", $p4 = "", $p5 = "")
-	Local Static $fHandle = FileOpen("logs\console.log", 1);$FO_APPEND
+	Local Static $fHandle = FileOpen(StringFormat("%s\console.log", $_TS_Project_Console_log_dir), $FO_APPEND + $FO_CREATEPATH)
 	Switch $c
 		Case "r"; Red
 			$c = "!"

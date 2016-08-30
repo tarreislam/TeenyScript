@@ -49,7 +49,7 @@ Func _TS_HOTKEY_BUILD_AU3()
 
 	If IsObj($oProject) Then _TS_Project_VCS($oProject); Run Version Control System
 
-	$ConsoleWrite("Conversion from '%s' to '%s' was successful!", "g", $sTsFileName, $sAu3FileName)
+	$ConsoleWrite("Conversion from '%s' -> '%s' was successful!", "g", $sTsFileName, $sAu3FileName)
 EndFunc
 
 Func _TS_HOTKEY_BUILD_EXE()
@@ -78,7 +78,6 @@ Func _TS_HOTKEY_BUILD_EXE()
 		$oProject.ver, _
 		$oProject.copyright, _
 		$oProject.type)
-
 	Else
 		_SciTe_compileFile($sAu3FileName)
 	EndIf
@@ -98,15 +97,11 @@ Func _TS_HOTKEY_Exit()
 EndFunc
 
 Func _TS_HotkeyManager($bEnable = True)
-
-
 	For $i = 1 to $_SCITE_HotkeyCollectionKeys[0]
-
 		If $bEnable Then
 			HotKeySet($_SCITE_HotkeyCollectionKeys[$i], $_SCITE_HotkeyCollectionFunctNames[$i])
 		Else
 			HotKeySet($_SCITE_HotkeyCollectionKeys[$i])
 		EndIf
 	Next
-
 EndFunc

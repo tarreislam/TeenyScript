@@ -47,7 +47,6 @@ Func GuiOpt_Main_Exit()
 	Return GuiOpt_Exit()
 EndFunc
 
-
 Func GuiOpt_Exit()
 	GUIDelete(@GUI_WinHandle)
 EndFunc
@@ -410,7 +409,7 @@ Func GuiOpt_Main_ResetHotkey()
 	$_SCITE_HotkeyCollectionKeys[4] = "{F8}"
 	$_SCITE_HotkeyCollectionKeys[5] = "{F10}"
 	GuiOpt_Main_getHotkeyList()
-	MsgBox($MB_ICONINFORMATION, $_TS_AppTitle, "Hotkeys reset!")
+	MsgBox($MB_ICONINFORMATION, $_TS_AppTitle, "Hotkeys reset!", 0, $Gui_Main)
 EndFunc
 
 Func GuiOpt_Main_SetHotkey()

@@ -40,7 +40,6 @@ Func _SciTe_runFile($sInputFile, $sDisplayFile)
 	_SciTe_SexyTimePassedRauR($timer)
 EndFunc   ;==>_SciTe_runFile
 
-
 Func _SciTe_compileFile($sInputFile, $sOutputDir = False, $sFileName = False, $cmdLine_ICON = False, $cmdLine_ARCH = "32", $cmdLine_ProjectName = False, $cmdLine_ProjectVersion = False, $cmdLine_Copyright = @UserName, $cmdLine_Type = "gui")
 
 	If $cmdLine_ARCH == "96" Then
@@ -60,7 +59,7 @@ Func _SciTe_compileFile($sInputFile, $sOutputDir = False, $sFileName = False, $c
 
 	; Prepare parameters for Au2exe
 	Local Const $Au2exe_param_in = StringFormat(' /in "%s"', $sInputFile), _
-	$Au2exe_param_out = StringFormat(' /out "%s"', $sOutputFile), _
+	$Au2exe_param_out = $sOutputDir ? StringFormat(' /out "%s"', $sOutputFile) : "", _
 	$Au2exe_param_icon = $cmdLine_ICON ? StringFormat(' /icon "%s"', $cmdLine_ICON) : "", _
 	$Au2exe_param_arch = $cmdLine_ARCH <> "32" ? StringFormat(' /x%s', $cmdLine_ARCH) : "", _
 	$Au2exe_param_productname = $cmdLine_ProjectName ? StringFormat(' /productname "%s"', $cmdLine_ProjectName) : "", _
@@ -87,7 +86,7 @@ Func _SciTe_compileFile($sInputFile, $sOutputDir = False, $sFileName = False, $c
 	$Au2exe_param_fileversion)
 
 	; Run Au2Exe
-	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Compiling '%s' -> '%s'", $sInputFile, $sOutputFile)
+	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Compiling '%s' -> '%s'", $sInputFile, ($sOutputDir ? $sOutputFile : StringReplace($sInputFile, ".au3", ".exe")))
 	RunWait($Au2Exe_fullStr, "", Default, $STDIN_CHILD)
 	_SciTe_SexyTimePassedRauR($timer)
 
@@ -108,8 +107,6 @@ Func _Scite_SendMessage($sCmd = "menucommand:420")
             'Int', $WM_COPYDATA, 'HWnd', 0, _
             'Ptr', DllStructGetPtr($COPYDATA))
 EndFunc   ;==>SendSciTE_Command
-
-
 
 Func _SciTe_SexyTimePassedRauR_START($sText, $p1 = "", $p2 = "", $p3 = "")
 	$ConsoleWrite($sText, "b", $p1, $p2, $p3)

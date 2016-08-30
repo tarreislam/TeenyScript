@@ -438,22 +438,20 @@ Func _TS_Compose_Heredoc(ByRef $item); (<<<)....(>>>>)
 EndFunc
 
 Func _TS_Compose_Lists(ByRef $item); {}
-	$_resource_bLazyLoad = True
 	; Brand new list
 	Local $aRe_list_create = StringRegExp($item.content, $re_list_create, 3), $aRe_list_create_len = UBound($aRe_list_create)
-	For $i = 0 To $aRe_list_create_len - 1 Step + 2
 
+	For $i = 0 To $aRe_list_create_len - 1 Step + 2
 		; Check if are going to MultiAssign from this creation
 		Local $sListBuffer = _TS_Compose_Lists_MultiAssignByContent($aRe_list_create[$i], $aRe_list_create[$i + 1])
-
 		; Do the actual replace after we parse each inner value so we dont get OOP (Out of position)
 		$item.content = StringRegExpReplace($item.content, $re_list_create, "$$1 = _AutoItObject_Create()" & $sListBuffer, 1)
 	Next
 
 	; Set
-	Local $aRe_list_set = StringRegExp($item.content, $re_list_set, 3)
+	Local $aRe_list_set = StringRegExp($item.content, $re_list_set, 3), $aRe_list_set_len = UBound($aRe_list_set)
 	Local $Re2Use = ""
-	For $i = 0 To UBound($aRe_list_set) - 1 Step + 3
+	For $i = 0 To $aRe_list_set_len - 1 Step + 3
 		Local $identifier = $aRe_list_set[$i]
 		Local $Key = $aRe_list_set[$i + 1]
 		Local $Val = $aRe_list_set[$i + 2]
@@ -476,9 +474,9 @@ Func _TS_Compose_Lists(ByRef $item); {}
 
 	; Get (the one with execute)
 	; We go through each and one. so we can translate $list{"key"} to "$list.key", but keep $list{$key} as "Execute('$list.' & $key)"
-	Local $aRe_list_get = StringRegExp($item.content, $re_list_get, 3), $re2Use = ""
+	Local $aRe_list_get = StringRegExp($item.content, $re_list_get, 3), $aRe_list_get_len = UBound($aRe_list_get), $re2Use = ""
 
-	For $i = 0 to UBound($aRe_list_get) - 1 Step + 2
+	For $i = 0 to $aRe_list_get_len - 1 Step + 2
 
 		Local $key = $aRe_list_get[$i + 1]
 
@@ -497,6 +495,8 @@ Func _TS_Compose_Lists(ByRef $item); {}
 		$item.content = StringRegExpReplace($item.content, $re_list_get, $re2Use, 1)
 	Next
 
+	; Indicate that we need AutoitObject
+	If $aRe_list_create_len Or $aRe_list_set_len Or $aRe_list_get_len Then $_resource_bLazyLoad = True
 EndFunc
 
 Func _TS_Compose_Macro_Misc(ByRef $item, const $oNamespace); @Methodparams @Namespace, @Extends etc...

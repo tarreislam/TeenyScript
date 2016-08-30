@@ -100,11 +100,17 @@ Func _TS_Project_createNewproject($oProject, $sNewProjectTargetDir, $hParent = 0
 	; Attempt to copy content
 	If Not _DirCopyContent($oProject.dir, $sNewProjectTargetDir, $hParent) Then Return SetError(3, @error, 0)
 
+	; Utility sleep
+	Sleep(250)
+
 	; Remove write protection
 	If Not FileSetAttrib($oProject.dir, "-R", $FT_RECURSIVE) Then
 		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Failed to remove write protection on '%s'", $oProject.dir), 0, $hParent)
 		Return SetError(4, 0, 0)
 	EndIf
+
+	; Utility sleep
+	Sleep(250)
 
 	; Add the current TS version to the project
 	IniWrite(StringFormat($_TS_Project_FilePatt, $sNewProjectTargetDir), "teenyscript", "_TS_AppVer", $_TS_AppVer)
