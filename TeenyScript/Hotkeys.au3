@@ -64,8 +64,14 @@ Func _TS_HOTKEY_BUILD_EXE()
 		$ConsoleWrite("Found %s, compiling with options", "g", $_TS_Project_Ts_PROJECT_INI)
 		_TS_Project_VCS($oProject); Run Version Control System
 
+		; Check if we going to build a launcher
+		If $oProject.includeLauncher == "True" Then
+			_TS_Project_createLauncher($oProject)
+		EndIf
+
 		_SciTe_compileFile($sAu3FileName, _
 		$oProject.dir, _
+		False, _
 		$oProject.icon, _
 		$oProject.arch, _
 		$oProject.name, _

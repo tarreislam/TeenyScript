@@ -8,9 +8,7 @@ Kolla att @Namespace är det första som presenteras i filen (Om den finns) annars
 
 
  # # # # # # # # # Todo features # # # # # # # #
-Lägg till user UDF i project liztan
 
-Launcher (Gui klart, gör en som har en .ini fil med)
 Interfaces
 Förberedelse för nestade listor finns, verkställ dem med funktionen (Kolla RE.au3) och Lists i parser
 

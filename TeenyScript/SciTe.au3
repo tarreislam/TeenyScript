@@ -34,50 +34,61 @@ Func _SciTe_getOpenFileName()
 	Return StringRegExpReplace(WinGetTitle($_SCITE_HWND), $re_SciTE_TSpath, "")
 EndFunc   ;==>_SciTe_getOpenFileName
 
-Func _SciTe_runFile($sFile, $sDisplayFile)
+Func _SciTe_runFile($sInputFile, $sDisplayFile)
 	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Running '%s' %s", $sDisplayFile, (isEmpty($_resource_CmdLine) ? 'without params' : 'with params: '& $_resource_CmdLine))
-	RunWait(StringFormat('%s "%s" %s', $_AU3_EXE, $sFile, $_resource_CmdLine), "", Default, $STDIN_CHILD)
+	RunWait(StringFormat('%s "%s" %s', $_AU3_EXE, $sInputFile, $_resource_CmdLine), "", Default, $STDIN_CHILD)
 	_SciTe_SexyTimePassedRauR($timer)
 EndFunc   ;==>_SciTe_runFile
 
 
-Func _SciTe_compileFile($sFile, $cmdLine_OUT = False, $cmdLine_ICON = False, $cmdLine_ARCH = "32", $cmdLine_ProjectName = False, $cmdLine_ProjectVersion = $_TS_AppVer, $cmdLine_Copyright = @UserName, $cmdLine_Type = "gui")
+Func _SciTe_compileFile($sInputFile, $sOutputDir = False, $sFileName = False, $cmdLine_ICON = False, $cmdLine_ARCH = "32", $cmdLine_ProjectName = False, $cmdLine_ProjectVersion = False, $cmdLine_Copyright = @UserName, $cmdLine_Type = "gui")
 
 	If $cmdLine_ARCH == "96" Then
-		_SciTe_compileFile($sFile, $cmdLine_OUT, $cmdLine_ICON, "32", $cmdLine_ProjectName, $cmdLine_ProjectVersion, $cmdLine_Copyright, $cmdLine_Type)
-		_SciTe_compileFile($sFile, $cmdLine_OUT, $cmdLine_ICON, "64", $cmdLine_ProjectName, $cmdLine_ProjectVersion, $cmdLine_Copyright, $cmdLine_Type)
+		_SciTe_compileFile($sInputFile, $sOutputDir, $sFileName, $cmdLine_ICON, "32", $cmdLine_ProjectName, $cmdLine_ProjectVersion, $cmdLine_Copyright, $cmdLine_Type)
+		_SciTe_compileFile($sInputFile, $sOutputDir, $sFileName, $cmdLine_ICON, "64", $cmdLine_ProjectName, $cmdLine_ProjectVersion, $cmdLine_Copyright, $cmdLine_Type)
 		Return True
 	EndIf
 
-	$cmdLine_OUT = $cmdLine_OUT ? StringFormat("%s\%s_x%d.exe", $cmdLine_OUT, $cmdLine_ProjectName, $cmdLine_ARCH) : $cmdLine_OUT
+	; Determine what au2exe to use
+	Local Const $program = $cmdLine_ARCH == "32" ? $_AU3_AU2EXE : $_AU3_AU2EXE_64
 
-	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Compiling '%s' -> '%s'", $sFile, ($cmdLine_OUT ? $cmdLine_OUT : StringReplace($sFile, ".au3", ".exe") ))
+	; The filename without extension
+	Local Const $sFilenameNoExt = Not $sFileName ? StringFormat("%s_x%d", $cmdLine_ProjectName, $cmdLine_ARCH) : $sFileName
 
-	;What program to use
-	Local $program = $cmdLine_ARCH == "32" ? $_AU3_AU2EXE : $_AU3_AU2EXE_64
+	; The new output filed
+	Local Const $sOutputFile = StringFormat("%s\%s.exe", $sOutputDir, $sFilenameNoExt)
 
-	$filedescription = $cmdLine_ProjectName ? StringFormat(' /FILEDESCRIPTION "%s"', $cmdLine_ProjectName) : ""
-	$originalFilename = StringFormat(' /originalfilename "%s_x%d.exe"', $cmdLine_ProjectName, $cmdLine_ARCH)
-	$cmdLine_OUT = $cmdLine_OUT ? StringFormat(' /OUT "%s"', $cmdLine_OUT) : ""
-	$cmdLine_ICON = $cmdLine_ICON ? StringFormat(' /ICON "%s"', $cmdLine_ICON) : ""
-	$cmdLine_ARCH = $cmdLine_ARCH <> "32" ? StringFormat(' /x%d', $cmdLine_ARCH) : ""
-	$cmdLine_ProjectName = $cmdLine_ProjectName ? StringFormat(' /PRODUCTNAME "%s"', $cmdLine_ProjectName) : ""
-	$cmdLine_ProjectVersion = $cmdLine_ProjectVersion ? StringFormat(' /PRODUCTVERSION "%s"', $cmdLine_ProjectVersion) : ""
-	$cmdLine_Copyright = $cmdLine_Copyright ? StringFormat(' /legalcopyright "%s"', $cmdLine_Copyright) : ""
-	; @autoitver : $_TS_AppVer
-	$fileversion = StringFormat(' /fileversion "%s"', $_TS_AppVer)
+	; Prepare parameters for Au2exe
+	Local Const $Au2exe_param_in = StringFormat(' /in "%s"', $sInputFile), _
+	$Au2exe_param_out = StringFormat(' /out "%s"', $sOutputFile), _
+	$Au2exe_param_icon = $cmdLine_ICON ? StringFormat(' /icon "%s"', $cmdLine_ICON) : "", _
+	$Au2exe_param_arch = $cmdLine_ARCH <> "32" ? StringFormat(' /x%s', $cmdLine_ARCH) : "", _
+	$Au2exe_param_productname = $cmdLine_ProjectName ? StringFormat(' /productname "%s"', $cmdLine_ProjectName) : "", _
+	$Au2exe_param_productversion = $cmdLine_ProjectVersion ? StringFormat(' /productversion "%s"', $cmdLine_ProjectVersion) : "", _
+	$Au2exe_param_legalcopyright = StringFormat(' /legalcopyright "%s"', isEmpty($cmdLine_Copyright) ? @UserName : $cmdLine_Copyright), _
+	$Au2exe_param_type = StringFormat(' /%s', $cmdLine_Type), _
+	$Au2exe_param_filedescription = StringFormat(' /filedescription "%s"', $sFilenameNoExt), _
+	$Au2exe_param_originalfilename = StringFormat(' /originalfilename "%s.exe"', $sFilenameNoExt)
+	$Au2exe_param_fileversion = StringFormat(' /fileversion "%s"', $_TS_AppVer)
 
-	$ConsoleWrite("Compiling using: '%s'", "g", $program)
-	RunWait(StringFormat('%s /IN "%s"%s%s%s%s%s%s%s%s%s /%s', $program, $sFile, $cmdLine_OUT, _
-	$cmdLine_ICON, _
-	$cmdLine_ARCH, _
-	$cmdLine_ProjectName, _
-	$cmdLine_ProjectVersion, _
-	$cmdLine_Copyright, _
-	$filedescription, _
-	$originalFilename, _
-	$fileversion, _
-	$cmdLine_Type), "", Default, $STDIN_CHILD)
+	; Build the au2exe string
+	Local $Au2Exe_fullStr = StringFormat("%s%s%s%s%s%s%s%s%s%s%s%s", _
+	$program, _
+	$Au2exe_param_in, _
+	$Au2exe_param_out, _
+	$Au2exe_param_icon, _
+	$Au2exe_param_arch, _
+	$Au2exe_param_productname, _
+	$Au2exe_param_productversion, _
+	$Au2exe_param_legalcopyright, _
+	$Au2exe_param_type, _
+	$Au2exe_param_filedescription, _
+	$Au2exe_param_originalfilename, _
+	$Au2exe_param_fileversion)
+
+	; Run Au2Exe
+	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Compiling '%s' -> '%s'", $sInputFile, $sOutputFile)
+	RunWait($Au2Exe_fullStr, "", Default, $STDIN_CHILD)
 	_SciTe_SexyTimePassedRauR($timer)
 
 	Return True

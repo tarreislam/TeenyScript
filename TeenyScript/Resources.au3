@@ -31,8 +31,8 @@ Global Const $_TS_FullAppTitle = StringFormat("%s %s", $_TS_AppTitle, $_TS_AppVe
 Global Const $_TS_OptFile = @ScriptDir & "\TS.opt.ini"
 Global Const $_TS_TeenyScript_DIR = @ScriptDir & "\TeenyScript"
 Global Const $_TS_Dependencies_Dir = $_TS_TeenyScript_DIR & "\_Dependencies_"; AutoitObject only atm
-Global Const $_TS_Project_Template_Dir = $_TS_TeenyScript_DIR & "\Templates\TeenyScript default"; For new kind of empty projects
-Global Const $_TS_Project_Template_UDT_DIR = $_TS_TeenyScript_DIR & "\Templates\User Defined Templates"
+Global Const $_TS_Project_Template_Dir = $_TS_TeenyScript_DIR & "\Templates"
+Global Const $_TS_Project_TS_Template_DIR = $_TS_Project_Template_Dir & "\TS Projects"
 ; ~ Ts Reserved variables
 Global Const $_TS_ObjectName = "this"
 
@@ -46,36 +46,6 @@ Global Const $_TS_Debug = ";TS_DEBUG=%s:%s:%s:%s"
 
 ; ~ Misc of misc
 Global Enum $_TS_COMPILE_RUN, $_TS_COMPILE_BUILD_AU3, $_TS_COMPILE_BUILD_EXE
-
-#cs
-[main]
-name=My project Name
-ver = Alpha 1.0
-
-; %ScriptDir% = Selected file dir
-; %ScriptName% = The name with .exe
-
-[build]
-dir=%ScriptDir%\Product
-name=%scriptName%
-; 64, 32 or 96 for both
-architectureMode=96
-iconDir = %scriptDir%\Public\Image.ico
-
-; Digital signature opt
-ds_enabled = true
-ds_pfx= %ScriptDir%\public\myCert.pfx
-
-[build_ext]
-;Directive=value (Directives avilable: Copy, CopyReplace, CopyReplacePrompt)
-CopyReplacePrompt=%ScriptDir%/SomeFile.dll
-CopyReplacePrompt=%ScriptDir%/music/MyFile.mp3
-
-
-[teenyscript] ;Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
-build_ver = 1.0.0
-
-#ce
 
 ; ~ Autoit related resources
 Global Const $_AU3_EXE = @AutoItExe
@@ -99,7 +69,10 @@ Global Const $_SCITE_Hotkey_BUILD_EXE = IniRead($_TS_OptFile, "hotkeys", "build_
 Global Const $_SCITE_Hotkey_SET_OPTIONS = IniRead($_TS_OptFile, "hotkeys", "set_options", "{F8}"); allt ska vara här @x64 parametrar och Requireadmin etcetc "Project dir" och "New Project" etcc
 Global Const $_SCITE_Hotkey_EXIT = IniRead($_TS_OptFile, "hotkeys", "exit", "{F10}")
 
-; Dependencies to Directy Load into every project
+; ~ LazyLoad section
+; project Launcher
+Global Const $_TS_Project_LazyLoaded_Template = _TS_LazyLoad($_TS_Project_Template_Dir & "\Misc\Launcher.au3")
+; AutoitObject
 Global Const $_TS_LazyLoadDependencies = [$_TS_Dependencies_Dir & "\AutoItObject.au3", $_TS_Dependencies_Dir & "\CustomInit.au3"]
 Global Const $_TS_LazyLoadedContent = _TS_LazyLoad($_TS_LazyLoadDependencies)
 
@@ -241,22 +214,28 @@ EndFunc
 #EndRegion Error Related
 ; Load file content into memory instead of using FileRead everytime a script is getting compiled, this can be used by lazy people (Like me Tarre*3)
 Func _TS_LazyLoad($aFilepaths)
+	Local $sRet, $sFilePaths
+
 	if Not IsArray($aFilepaths) Then
-		MsgBox($MB_ICONWARNING, $_TS_FullAppTitle, StringFormat("The parameter '$aFilepaths' needs to be an array..."))
-		Return "; Failed to Lazyload....." & @CRLF
+		$sFilePaths = $aFilepaths
+		_TS_LazyLoad_Item($sRet, $aFilepaths)
+	Else
+		$sFilePaths = _ArrayToString($aFilepaths, ", ")
+		For $i = 0 to UBound($aFilepaths) - 1
+			Local $sCurFile = $aFilepaths[$i]
+			_TS_LazyLoad_Item($sRet, $sCurFile)
+		Next
 	EndIf
-	Local $sFilePaths = _ArrayToString($aFilepaths, ", ")
-	Local $sRet = "#Region LazyLoaded: " & $sFilePaths & @CRLF
-	For $i = 0 to UBound($aFilepaths) - 1
-		Local $sCurFile = $aFilepaths[$i]
-		if not FileExists($sCurFile) Then
-			MsgBox($MB_ICONWARNING, $_TS_FullAppTitle, StringFormat("LazyLoaded file '%s' was not found and wont be included", $sCurFile))
-		Else
-			$sRet &= "; File: "& $sCurFile & @CRLF & FileRead($sCurFile) & @CRLF
-		EndIf
-	Next
-	$sRet &= "#EndRegion LazyLoaded: " & $sFilePaths & @CRLF
-	Return $sRet
+
+	Return "#Region LazyLoaded: " & $sFilePaths & $sRet & @CRLF & "#EndRegion LazyLoaded: " & $sFilePaths & @CRLF
+EndFunc
+
+Func _TS_LazyLoad_Item(ByRef $sRet, $sCurFile)
+	if not FileExists($sCurFile) Then
+		MsgBox($MB_ICONWARNING, $_TS_FullAppTitle, StringFormat("LazyLoaded file '%s' was not found and wont be included", $sCurFile))
+	Else
+		$sRet &= @CRLF & StringFormat($_TS_Debug, $sCurFile, "Unkown", "Unkown", "Unkown") & @CRLF & FileRead($sCurFile) & @CRLF
+	EndIf
 EndFunc
 
 

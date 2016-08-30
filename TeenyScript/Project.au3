@@ -140,6 +140,7 @@ Func _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir = False,
 	Local Const $main_copyright = IniRead($_TS_ProjectFile, "main", "copyright", "Unkown")
 	; parse directory macros
 	Local Const $build_arch = IniRead($_TS_ProjectFile, "build", "arch", "32")
+	Local Const $build_includeLauncher = IniRead($_TS_ProjectFile, "build", "includeLauncher", "False")
 	Local Const $teenyscript_TS_AppVer = IniRead($_TS_ProjectFile, "teenyscript", "_TS_AppVer", False)
 	Local $build_dir, $build_icon
 
@@ -165,6 +166,7 @@ Func _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir = False,
 	_AutoItObject_AddProperty($oRet, "icon", $ELSCOPE_PUBLIC, $build_icon)
 	_AutoItObject_AddProperty($oRet, "arch", $ELSCOPE_PUBLIC, $build_arch)
 	_AutoItObject_AddProperty($oRet, "type", $ELSCOPE_PUBLIC, $build_type)
+	_AutoItObject_AddProperty($oRet, "includeLauncher", $ELSCOPE_PUBLIC, $build_includeLauncher)
 
 	; VCS
 	_AutoItObject_AddProperty($oRet, "teenyscript_TS_AppVer", $ELSCOPE_READONLY, $teenyscript_TS_AppVer)
@@ -180,7 +182,10 @@ Func _TS_Project_setSettings($_TS_ProjectFile, _
 	$build_arch, _
 	$build_dir, _
 	$build_icon, _
-	$build_type)
+	$build_type, _
+	$build_includeLauncher, _
+	$bUpdateTSver = False)
+	If Not FileExists($_TS_ProjectFile) Then Return Null
 
 	IniWrite($_TS_ProjectFile, "main", "name", $main_name)
 	IniWrite($_TS_ProjectFile, "main", "ver", $main_ver)
@@ -189,6 +194,10 @@ Func _TS_Project_setSettings($_TS_ProjectFile, _
 	IniWrite($_TS_ProjectFile, "build", "dir", $build_dir)
 	IniWrite($_TS_ProjectFile, "build", "icon", $build_icon)
 	IniWrite($_TS_ProjectFile, "build", "type", $build_type)
+	IniWrite($_TS_ProjectFile, "build", "includeLauncher", $build_includeLauncher)
+
+	If $bUpdateTSver Then IniWrite($_TS_ProjectFile, "teenyscript", "_TS_AppVer", $_TS_AppVer)
+	Return False
 EndFunc
 
 
@@ -197,4 +206,26 @@ Func _TS_Project_parseMacrostring($sString, $build_arch, $main_name, $main_ver, 
 	$sString = StringReplace($sString, "%main.ver%", $main_ver)
 	$sString = StringReplace($sString, "%build.arch%", $build_arch)
 	Return StringReplace($sString, "%project.dir%", $project_dir)
+EndFunc
+
+Func _TS_Project_createLauncher($oProject); Creates a file used
+
+	; Create our bogus file
+	Local $sNewFile = StringFormat("%s\launcher.au3", $oProject.dir)
+
+	; Replace macros from our launcher.au3
+	Local $sFileContent = StringReplace($_TS_Project_LazyLoaded_Template, "%project.name%", $oProject.name)
+	$sFileContent = StringReplace($sFileContent, "%teenyscript._TS_AppVer%", $_TS_AppVer)
+
+	; Write the new data
+	Local Const $fHandle = FileOpen($sNewFile, $FO_OVERWRITE)
+	FileWrite($fHandle, $sFileContent)
+	FileClose($fHandle)
+
+	; Compile the new file
+	_SciTe_compileFile($sNewFile, $oProject.dir, $oProject.name, $oProject.icon, "32", "TeenyScript Launcher", $_TS_AppVer, $_TS_AppTitle)
+
+	;  Cleanup
+	FileDelete($sNewFile)
+
 EndFunc

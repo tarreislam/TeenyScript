@@ -36,7 +36,8 @@ Global Const $___MacroZzzZz = @CRLF & @CRLF & "~Avilable macros " & @CRLF & @CRL
 Global $Gui_Main, $gui_Project_Settings, $gui_Main_Input_CmdLine, $gui_Main_btn_create_new_project, $gui_Main_btn_edit_project, $gui_Hotkeys_list_hotkeys, $gui_Hotkeys_btn_change, $gui_Hotkeys_btn_reset_to_default, _
 $gui_Main_btn_install_calltips, $gui_Project_Settings_radio_32_bit, $gui_Project_Settings_radio_64_bit, $gui_Project_Settings_radio_32_and_64_bit, $gui_Project_Settings_input_project_name, _
 $gui_Project_Settings_input_project_version, $gui_Project_Settings_btn_output_dir, $gui_Project_Settings_input_output_dir, $gui_Project_Settings_btn_icon, $gui_Project_Settings_input_icon, _
-$gui_Project_Settings_btn_save, $gui_Project_Settings_input_project_copyright_holder, $gui_Project_Settings_radio_gui, $gui_Project_Settings_radio_console
+$gui_Project_Settings_btn_save, $gui_Project_Settings_input_project_copyright_holder, $gui_Project_Settings_radio_gui, $gui_Project_Settings_radio_console, $gui_Project_Settings_checkbox_include_launcher, _
+$gui_Project_Settings_btn_update_ts_ver, $GuiOpt_Project_Settings_UpdateTsver
 ; When exiting from the main function
 Func GuiOpt_Main_Exit()
 	Local $_GET_Main_Input_CmdLine = GUICtrlRead($gui_Main_Input_CmdLine)
@@ -159,14 +160,12 @@ Func GuiOpt_Project_Settings_Save()
 	If StringRegExp($build_dir, '\"') Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("The project icon '%s' may not contain ''", $build_dir), 0, $gui_Project_Settings)
 	If StringRegExp($build_icon, '\"') Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("The build directory '%s' may not contain ''", $build_icon), 0, $gui_Project_Settings)
 
-
 	If GUICtrlRead($gui_Project_Settings_radio_gui) == $GUI_CHECKED Then $build_type = "gui"
 	If GUICtrlRead($gui_Project_Settings_radio_console) == $GUI_CHECKED Then $build_type = "console"
 
 	If GUICtrlRead($gui_Project_Settings_radio_32_bit) == $GUI_CHECKED Then $build_arch = "32"
 	If GUICtrlRead($gui_Project_Settings_radio_64_bit) == $GUI_CHECKED Then $build_arch = "64"
 	If GUICtrlRead($gui_Project_Settings_radio_32_and_64_bit) == $GUI_CHECKED Then $build_arch = "96"
-
 
 	_TS_Project_setSettings($_TS_ProjectFile, _
 	$main_name, _
@@ -175,7 +174,9 @@ Func GuiOpt_Project_Settings_Save()
 	$build_arch, _
 	$build_dir, _
 	$build_icon, _
-	$build_type)
+	$build_type, _
+	GUICtrlRead($gui_Project_Settings_checkbox_include_launcher) == $GUI_CHECKED, _
+	$GuiOpt_Project_Settings_UpdateTsver)
 
 	; Generate warning if the directory dosent exist (Dont prompt it as an error)
 	Local Const $oProjectSettings = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir)
@@ -184,6 +185,7 @@ Func GuiOpt_Project_Settings_Save()
 		$Warnings+=1
 		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Warning! '%s' the directory '%s' does not exist yet.", GUICtrlRead($gui_Project_Settings_input_output_dir), $oProjectSettings.dir), 0, $gui_Project_Settings)
 	EndIf
+
 	If Not FileExists($oProjectSettings.icon) Then
 		$Warnings+=1
 		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Warning! '%s' the icon '%s' does not exist yet.", GUICtrlRead($gui_Project_Settings_input_icon), $oProjectSettings.icon), 0, $gui_Project_Settings)
@@ -199,12 +201,14 @@ Func GuiOpt_Project_Settings_Edit_Project()
 	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
 
 	If Not FileExists($_TS_ProjectFile) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Could not find '%s', make sure SciTE is focused on the main file that co-exists with the '%s' file", $_TS_Project_Ts_PROJECT_INI, $_TS_Project_Ts_PROJECT_INI), 0, $Gui_Main)
+	$GuiOpt_Project_Settings_UpdateTsver = False; Mark for update
 
-	$gui_Project_Settings = GUICreate("Edit Project Settings", 474, 241, 691, 390, -1, -1, $Gui_Main)
-	GUICtrlCreateGroup("Architecture  options", 240, 8, 225, 41)
-	$gui_Project_Settings_radio_32_bit = GUICtrlCreateRadio("32 bit", 248, 24, 57, 17)
-	$gui_Project_Settings_radio_64_bit = GUICtrlCreateRadio("64 bit", 312, 24, 49, 17)
-	$gui_Project_Settings_radio_32_and_64_bit = GUICtrlCreateRadio("32 && 64 bit", 368, 24, 81, 17)
+	$gui_Project_Settings = GUICreate("Edit Project Settings", 474, 269, 418, 321, -1, -1, $Gui_Main)
+	GUICtrlCreateGroup("Architecture  options", 240, 8, 225, 57)
+	$gui_Project_Settings_radio_32_bit = GUICtrlCreateRadio("32 bit", 248, 24, 49, 17)
+	$gui_Project_Settings_radio_64_bit = GUICtrlCreateRadio("64 bit", 304, 24, 49, 17)
+	$gui_Project_Settings_radio_32_and_64_bit = GUICtrlCreateRadio("32 && 64 bit", 360, 24, 81, 17)
+	$gui_Project_Settings_checkbox_include_launcher = GUICtrlCreateCheckbox("Include launcher", 360, 40, 97, 17)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	GUICtrlCreateGroup("File Details", 8, 56, 225, 177)
 	GUICtrlCreateLabel("Project name", 16, 72, 66, 17)
@@ -214,17 +218,18 @@ Func GuiOpt_Project_Settings_Edit_Project()
 	GUICtrlCreateLabel("Copyright holder", 16, 176, 80, 17)
 	$gui_Project_Settings_input_project_copyright_holder = GUICtrlCreateInput("", 16, 200, 209, 21)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
-	GUICtrlCreateGroup("Misc", 240, 56, 225, 137)
-	$gui_Project_Settings_btn_output_dir = GUICtrlCreateButton("&Output dir", 248, 72, 75, 25)
-	$gui_Project_Settings_input_output_dir = GUICtrlCreateInput("", 248, 104, 209, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_READONLY))
-	$gui_Project_Settings_btn_icon = GUICtrlCreateButton("&Icon", 248, 128, 75, 25)
-	$gui_Project_Settings_input_icon = GUICtrlCreateInput("", 248, 160, 209, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_READONLY))
+	GUICtrlCreateGroup("Misc", 240, 64, 225, 137)
+	$gui_Project_Settings_btn_output_dir = GUICtrlCreateButton("&Output dir", 248, 80, 75, 25)
+	$gui_Project_Settings_input_output_dir = GUICtrlCreateInput("", 248, 112, 209, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_READONLY))
+	$gui_Project_Settings_btn_icon = GUICtrlCreateButton("&Icon", 248, 136, 75, 25)
+	$gui_Project_Settings_input_icon = GUICtrlCreateInput("", 248, 168, 209, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_READONLY))
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
-	$gui_Project_Settings_btn_save = GUICtrlCreateButton("Verify && Apply", 240, 200, 219, 33)
+	$gui_Project_Settings_btn_save = GUICtrlCreateButton("Verify && Apply", 240, 208, 227, 25)
 	GUICtrlCreateGroup("Type of application ", 8, 8, 225, 41)
 	$gui_Project_Settings_radio_gui = GUICtrlCreateRadio("Gui", 16, 24, 57, 17)
 	$gui_Project_Settings_radio_console = GUICtrlCreateRadio("Console", 80, 24, 81, 17)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
+	$gui_Project_Settings_btn_update_ts_ver = GUICtrlCreateButton("Update project's TeenyScript version", 8, 240, 227, 25)
 
 	; Set project data to gui
 	Local $oProject = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir, False)
@@ -234,16 +239,30 @@ Func GuiOpt_Project_Settings_Edit_Project()
 	GUICtrlSetData($gui_Project_Settings_input_output_dir, $oProject.dir)
 	GUICtrlSetData($gui_Project_Settings_input_icon, $oProject.icon)
 
+
+	; Use Launcher?
+
+	Switch $oProject.includeLauncher
+		Case "True"
+			GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_CHECKED)
+		Case "False"
+			GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_UNCHECKED)
+	EndSwitch
+
 	; Determine options for Arch
 	Switch $oProject.arch; Will default 32 in WCS
 		Case '32'
 			GUICtrlSetState($gui_Project_Settings_radio_32_bit, $GUI_CHECKED)
+			GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_DISABLE)
 		Case '64'
 			GUICtrlSetState($gui_Project_Settings_radio_64_bit, $GUI_CHECKED)
+			GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_DISABLE)
 		Case '96'
 			GUICtrlSetState($gui_Project_Settings_radio_32_and_64_bit, $GUI_CHECKED)
+			GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_ENABLE)
 		Case Default
 			GUICtrlSetState($gui_Project_Settings_radio_32_bit, $GUI_CHECKED)
+			GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_DISABLE)
 	EndSwitch
 
 	; Determine build type
@@ -255,14 +274,19 @@ Func GuiOpt_Project_Settings_Edit_Project()
 		Case Else
 			GUICtrlSetState($gui_Project_Settings_radio_gui, $GUI_CHECKED)
 	EndSwitch
+
 	GUISetState(@SW_SHOW)
+	; Check if a launcher can be used (only with 32 and 64)
+	GUICtrlSetOnEvent($gui_Project_Settings_radio_32_bit, "GuiOpt_Project_Settings_checkbox_include_launcher")
+	GUICtrlSetOnEvent($gui_Project_Settings_radio_64_bit, "GuiOpt_Project_Settings_checkbox_include_launcher")
+	GUICtrlSetOnEvent($gui_Project_Settings_radio_32_and_64_bit, "GuiOpt_Project_Settings_checkbox_include_launcher")
 	; Exit window && Apply
 	GUISetOnEvent($GUI_EVENT_CLOSE, "GuiOpt_Exit"); Ignore changes
 	GUICtrlSetOnEvent($gui_Project_Settings_btn_save, "GuiOpt_Project_Settings_Save")
 	;Editz
 	GUICtrlSetOnEvent($gui_Project_Settings_btn_output_dir, "GuiOpt_Project_Settings_Set_Output_dir")
 	GUICtrlSetOnEvent($gui_Project_Settings_btn_icon, "GuiOpt_Project_Settings_Set_Icon")
-
+	GUICtrlSetOnEvent($gui_Project_Settings_btn_update_ts_ver, "GuiOpt_Project_Settings_UpdateTsver")
 	; VCS
 	_TS_Project_VCS($oProject, $gui_Project_Settings)
 EndFunc
@@ -279,7 +303,7 @@ Func GuiOpt_Project_Settings_create_new_project(); CNP
 
 	Local $aoProjects = _TS_Project_getProjectCollection(), $aoProject_id
 
-	If $aoProjects[0] == 0 Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Failed to load templates from '%s' ", $_TS_Project_Template_Dir), 0 , $Gui_Main)
+	If $aoProjects[0] == 0 Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Failed to load templates from '%s' ", $_TS_Project_TS_Template_DIR), 0 , $Gui_Main)
 	GuiOpt_Project_Settings_CNP_getProjectList($list_projects, $aoProjects)
 	GUISetState(@SW_SHOW)
 
@@ -329,6 +353,27 @@ EndFunc
 Func GuiOpt_Project_Settings_Set_Icon()
 	Local $try = InputBox($_TS_AppTitle, "Set icon name." & $___MacroZzzZz, GUICtrlRead($gui_Project_Settings_input_icon), Default, 350, 250, Default, Default, 0, $gui_Project_Settings)
 	If Not @error Then GUICtrlSetData($gui_Project_Settings_input_icon, $try)
+EndFunc
+
+Func GuiOpt_Project_Settings_UpdateTsver()
+	Local $MsgBox = MsgBox($MB_ICONWARNING + $MB_YESNO, $_TS_AppTitle, StringFormat("You are about the mark this project with the current TeenyScript version '%s'. Do you wish to continue?", $_TS_AppVer), 0, $gui_Project_Settings)
+	Switch $MsgBox
+		Case $IDYES
+			$GuiOpt_Project_Settings_UpdateTsver = True
+			Return MsgBox($MB_ICONINFORMATION, $_TS_AppTitle, StringFormat("This project TeenyScript version is now set with '%s'. Changes will take affect when you apply changes", $_TS_AppVer), 0, $gui_Project_Settings)
+		Case $IDNO
+			$GuiOpt_Project_Settings_UpdateTsver = False
+			Return _TS_AbortedByUser($gui_Project_Settings)
+	EndSwitch
+EndFunc
+
+Func GuiOpt_Project_Settings_checkbox_include_launcher()
+	If @GUI_CtrlId == $gui_Project_Settings_radio_32_and_64_bit Then
+		GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_ENABLE)
+	Else
+		GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_UNCHECKED)
+		GUICtrlSetState($gui_Project_Settings_checkbox_include_launcher, $GUI_DISABLE)
+	EndIf
 EndFunc
 
 Func GuiOpt_Project_Settings_CNP_getProjectList(ByRef $list_projects, ByRef $aoProjects)
