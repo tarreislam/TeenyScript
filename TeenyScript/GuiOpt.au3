@@ -96,25 +96,25 @@ Func GuiOpt_Main_btn_install_calltips()
 
 	If FileExists($_SCITE_USER_CALLTIPS_API) Then
 		$MsgBox = MsgBox($MB_ICONWARNING + $MB_YESNO, $_TS_AppTitle, StringFormat("The file '%s' already exists. Previous content will be ereased, do you wish to proceed?",$_SCITE_USER_CALLTIPS_API), 0, $Gui_Main)
-		If $MsgBox == $IDNO Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Aborted by user", 0, $Gui_Main)
+		If $MsgBox == $IDNO Then Return _TS_AbortedByUser($Gui_Main)
 	EndIf
 
 	If FileExists($_SCITE_USER_UDFS_PROPS) Then
 		$MsgBox = MsgBox($MB_ICONWARNING + $MB_YESNO, $_TS_AppTitle, StringFormat("The file '%s' already exists. Previous content will be ereased, do you wish to proceed?",$_SCITE_USER_CALLTIPS_API), 0, $Gui_Main)
-		If $MsgBox == $IDNO Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Aborted by user", 0, $Gui_Main)
+		If $MsgBox == $IDNO Then Return _TS_AbortedByUser($Gui_Main)
 	EndIf
 
 	;install Calltips
 	Local Const $sCalltips_api = _ArrayToString($_SCITE_aCALLTIPS, @CRLF)
 	Local $sUserUdfs_props = StringFormat("au3.keywords.user.udfs=%s", StringLower(_ArrayToString($_SCITE_aUSER_UDFS, " ")))
 
+	; Install Api
 	Local Const $sCalltips_apiHandle = FileOpen($_SCITE_USER_CALLTIPS_API, $FO_OVERWRITE + $FO_CREATEPATH)
 	If Not $sCalltips_apiHandle Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Failed to open '%s' for writing", $_SCITE_USER_CALLTIPS_API), 0, $Gui_Main)
 	FileWrite($sCalltips_apiHandle, $sCalltips_api)
 	FileClose($sCalltips_apiHandle)
 
 	; Install au3.UserUdfs.properties
-
 	Local Const $sUserUdfs_propsHandle = FileOpen($_SCITE_USER_UDFS_PROPS, $FO_OVERWRITE + $FO_CREATEPATH)
 	If Not $sUserUdfs_propsHandle Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Failed to open '%s' for writing", $_SCITE_USER_UDFS_PROPS), 0, $Gui_Main)
 	FileWrite($sUserUdfs_propsHandle, $sUserUdfs_props)
@@ -129,14 +129,12 @@ Func GuiOpt_Main_btn_install_calltips()
 		EndIf
 	EndIf
 
-
 	MsgBox($MB_ICONINFORMATION, $_TS_AppTitle, "Calltips installed successfully!", 0, $Gui_Main)
-
+	Return True
 EndFunc
 #EndRegion Misc
 
 #Region Project related
-
 Func GuiOpt_Project_Settings_Save()
 	Local $Warnings = 0
 	Local Const $getFromFilepath_basedir = getFromFilepath_basedir(_SciTe_getOpenFileName())
@@ -200,7 +198,7 @@ Func GuiOpt_Project_Settings_Edit_Project()
 	Local Const $getFromFilepath_basedir = getFromFilepath_basedir(_SciTe_getOpenFileName())
 	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
 
-	If Not FileExists($_TS_ProjectFile) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Could not find 'TS.project.ini', make sure SciTE is focused on the main file that co-exists with the TS.project.ini file", 0, $gui_Project_Settings)
+	If Not FileExists($_TS_ProjectFile) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Could not find '%s', make sure SciTE is focused on the main file that co-exists with the '%s' file", $_TS_Project_Ts_PROJECT_INI, $_TS_Project_Ts_PROJECT_INI), 0, $Gui_Main)
 
 	$gui_Project_Settings = GUICreate("Edit Project Settings", 474, 241, 691, 390)
 	GUICtrlCreateGroup("Architecture  options", 240, 8, 225, 41)
@@ -228,13 +226,14 @@ Func GuiOpt_Project_Settings_Edit_Project()
 	$gui_Project_Settings_radio_console = GUICtrlCreateRadio("Console", 80, 24, 81, 17)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	; Get project data
+	; Set project data to gui
 	Local $oProject = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir, False)
 	GUICtrlSetData($gui_Project_Settings_input_project_name, $oProject.name)
 	GUICtrlSetData($gui_Project_Settings_input_project_version, $oProject.ver)
 	GUICtrlSetData($gui_Project_Settings_input_project_copyright_holder, $oProject.copyright)
 	GUICtrlSetData($gui_Project_Settings_input_output_dir, $oProject.dir)
 	GUICtrlSetData($gui_Project_Settings_input_icon, $oProject.icon)
+
 	; Determine options for Arch
 	Switch $oProject.arch; Will default 32 in WCS
 		Case '32'
@@ -246,8 +245,8 @@ Func GuiOpt_Project_Settings_Edit_Project()
 		Case Default
 			GUICtrlSetState($gui_Project_Settings_radio_32_bit, $GUI_CHECKED)
 	EndSwitch
-	; Determine build type
 
+	; Determine build type
 	Switch $oProject.type
 		Case "gui"
 			GUICtrlSetState($gui_Project_Settings_radio_gui, $GUI_CHECKED)
@@ -263,50 +262,62 @@ Func GuiOpt_Project_Settings_Edit_Project()
 	;Editz
 	GUICtrlSetOnEvent($gui_Project_Settings_btn_output_dir, "GuiOpt_Project_Settings_Set_Output_dir")
 	GUICtrlSetOnEvent($gui_Project_Settings_btn_icon, "GuiOpt_Project_Settings_Set_Icon")
+
+	; VCS
+	_TS_Project_VCS($oProject, $gui_Project_Settings)
 EndFunc
 
-Func GuiOpt_Project_Settings_create_new_project()
-	Local Const $sNewProjectTargetDir = FileSelectFolder(StringFormat("%s - Select a new folder for your project", $_TS_AppTitle), @HomeDrive, 0, "", $Gui_Main)
-	If @error Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Aborted by user", 0, $Gui_Main)
+Func GuiOpt_Project_Settings_create_new_project(); CNP
+	Local Static $hGui = Null
+	If IsHWnd($hGui) Then WinActivate($hGui)
 
-	If Not FileExists($sNewProjectTargetDir) Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Unable to find folder %s", $sNewProjectTargetDir), 0, $Gui_Main)
-	; No problems? then we copy content
-	Local Const $sNewProjectTemplateDir = StringFormat("%s\New Project", $_TS_Project_Template_Dir)
+	; This gui dosent need any events. so we gonna toggle it here.
+	$hGui = GUICreate("Create new project", 339, 214, 220, 147, -1, -1, $Gui_Main)
+	Local $list_projects = GUICtrlCreateListView("Project name|Size", 8, 8, 322, 166)
+	Local $btn_next = GUICtrlCreateButton("Next", 256, 176, 75, 33)
+	; List the default projects, followed by the user defined ones
 
+	Local $aoProjects = _TS_Project_getProjectCollection(), $aoProject_id
 
-	If FileExists(StringFormat("%s\TS.project.ini", $sNewProjectTargetDir)) Or FileExists(StringFormat("%s\Main.ts.au3", $sNewProjectTargetDir)) Then
-		Local Const $MsgBox = MsgBox($MB_ICONWARNING + $MB_YESNO, $_TS_AppTitle, "A TS project was detected at this directory, would you like to OVERWRITE and continue?", 0, $Gui_Main)
-		If $MsgBox == $IDNO Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Aborted by user", 0, $Gui_Main)
-	EndIf
+	If $aoProjects[0] == 0 Then Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Failed to load templates from '%s' ", $_TS_Project_Template_Dir), 0 , $Gui_Main)
+	GuiOpt_Project_Settings_CNP_getProjectList($list_projects, $aoProjects)
+	GUISetState(@SW_SHOW)
 
-	Local $_FileListToArrayRec = _FileListToArrayRec($sNewProjectTemplateDir, "*", $FLTAR_FILESFOLDERS, $FLTAR_RECUR, $FLTAR_NOSORT, $FLTAR_RELPATH)
-
-	For $i = 1 To $_FileListToArrayRec[0]
-
-		; The source of thangz
-		Local $cSource = StringFormat("%s\%s", $sNewProjectTemplateDir, $_FileListToArrayRec[$i])
-		Local $cTarget = StringFormat("%s\%s", $sNewProjectTargetDir, $_FileListToArrayRec[$i])
-
-		Switch FileGetAttrib($cSource)
-
-			Case "D"; Create target directory if source is a directory
-				If Not DirCreate($cTarget) Then
-					Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, "An error occured while creating the directory: " & $cTarget, 0, $Gui_Main)
-				EndIf
-			Case Else; File
-				If Not FileCopy($cSource, $cTarget, $FC_OVERWRITE) Then
-					Return MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("An error occured while copying the file '%s' to '%s'", $cSource, $cTarget), 0, $Gui_Main)
-				EndIf
+	; Disable Gui events for this step
+	Opt("GUIOnEventMode", 0)
+	Local $GUIGetMsg
+	While True
+		$GUIGetMsg = GUIGetMsg()
+		Switch $GUIGetMsg
+			Case $btn_next
+				; Check for indices before we remove the GUI
+				$aoProject_id = Int(_GUICtrlListView_GetSelectedIndices($list_projects)) + 1
+				ExitLoop
+			Case $GUI_EVENT_CLOSE
+				ExitLoop
 		EndSwitch
-	Next
+	WEnd
+	; Delete the gui and set the static variable $hGui to null again
+	GUIDelete($hGui)
+	$hGui = Null
+	Opt("GUIOnEventMode",1)
 
-	; Open file main.ts.au3 of project
-	_Scite_OpenFile(StringFormat("%s\Main.ts.au3", $sNewProjectTargetDir))
+	; If we aborted
+	If $GUIGetMsg == $GUI_EVENT_CLOSE Then Return _TS_AbortedByUser($Gui_Main)
 
-	MsgBox($MB_ICONINFORMATION, $_TS_AppTitle, "The project has been created succesfully!", 0, $Gui_Main)
+	Local $oProject = $aoProjects[$aoProject_id]
 
-	;Edit project
-	GuiOpt_Project_Settings_Edit_Project()
+	Local Const $sNewProjectTargetDir = FileSelectFolder(StringFormat("%s - Select a new folder for your '%s' project", $_TS_AppTitle, $oProject.project.name), @DocumentsCommonDir, 0, "", $Gui_Main)
+	If @error Then Return GuiOpt_Project_Settings_create_new_project(); Go back to prev window
+
+	; Create
+	If Not _TS_Project_createNewproject($oProject, $sNewProjectTargetDir) Then
+		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("There was a problem creating '%s'. @error: %d, @extended: %d. Opening folder for inspection", $oProject.project.name, @error, @extended), 0, $Gui_Main)
+	Else
+		MsgBox($MB_ICONINFORMATION, $_TS_AppTitle, StringFormat("The project '%s' has been created succesfully!", $oProject.project.name), 0, $Gui_Main)
+		; Edit project
+		GuiOpt_Project_Settings_Edit_Project()
+	EndIf
 
 EndFunc
 
@@ -318,6 +329,17 @@ EndFunc
 Func GuiOpt_Project_Settings_Set_Icon()
 	Local $try = InputBox($_TS_AppTitle, "Set icon name." & $___MacroZzzZz, GUICtrlRead($gui_Project_Settings_input_icon), Default, 350, 250, Default, Default, 0, $gui_Project_Settings)
 	If Not @error Then GUICtrlSetData($gui_Project_Settings_input_icon, $try)
+EndFunc
+
+Func GuiOpt_Project_Settings_CNP_getProjectList(ByRef $list_projects, ByRef $aoProjects)
+	_GUICtrlListView_DeleteAllItems($list_projects)
+	Local $oProject
+	For $i = 1 To $aoProjects[0]
+		$oProject = $aoProjects[$i]
+		GUICtrlCreateListViewItem(StringFormat("%s|%s", $oProject.project.name, _rGetSize($oProject.dir)), $list_projects)
+	Next
+	_GUICtrlListView_SetItemSelected($list_projects, 0)
+	_GUICtrlListView_SetColumnWidth($list_projects, 0, $LVSCW_AUTOSIZE)
 EndFunc
 #EndRegion Project related
 
@@ -351,7 +373,7 @@ Func GuiOpt_Main_SetHotkey()
 	Local $HotkeyArr_Index = $ListVeiw_Index + 1
 	Local $inputBox_neWHotkey = InputBox($_TS_AppTitle, StringFormat("Enter a new hotkey for '%s'. Rember to use {} if you are going to use F-keys", $_SCITE_HotkeyCollectionDisplayNames[$HotkeyArr_Index]), $_SCITE_HotkeyCollectionKeys[$HotkeyArr_Index], "", -1, -1, Default, Default, 0, $Gui_Main)
 	If @error Then
-		MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Hotkey change aborted", 5, $Gui_Main)
+		_TS_AbortedByUser($Gui_Main)
 	Else
 		; Check colission
 		For $i = 1 To 5
@@ -360,7 +382,6 @@ Func GuiOpt_Main_SetHotkey()
 				Return
 			EndIf
 		Next
-
 		; Change the hotkey
 		$_SCITE_HotkeyCollectionKeys[$HotkeyArr_Index] = $inputBox_neWHotkey
 		;Save the hotkey

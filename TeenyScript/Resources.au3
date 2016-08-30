@@ -26,16 +26,19 @@
 #ce
 ; ~ TS related resources
 Global Const $_TS_AppTitle = "TeenyScript"
-Global Const $_TS_AppVer = "1.1.0";Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
+Global Const $_TS_AppVer = "1.2.0";Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
 Global Const $_TS_FullAppTitle = StringFormat("%s %s", $_TS_AppTitle, $_TS_AppVer)
 Global Const $_TS_OptFile = @ScriptDir & "\TS.opt.ini"
-Global Const $_TS_Dependencies_Dir = @ScriptDir & "\TeenyScript\_Dependencies_"; AutoitObject only atm
-Global Const $_TS_Project_Template_Dir = @ScriptDir & "\TeenyScript\Templates"; For new kind of empty projects
+Global Const $_TS_TeenyScript_DIR = @ScriptDir & "\TeenyScript"
+Global Const $_TS_Dependencies_Dir = $_TS_TeenyScript_DIR & "\_Dependencies_"; AutoitObject only atm
+Global Const $_TS_Project_Template_Dir = $_TS_TeenyScript_DIR & "\Templates\TeenyScript default"; For new kind of empty projects
+Global Const $_TS_Project_Template_UDT_DIR = $_TS_TeenyScript_DIR & "\Templates\User Defined Templates"
 ; ~ Ts Reserved variables
 Global Const $_TS_ObjectName = "this"
 
 ; ~ Ts misc
-Global Const $_TS_Project_FilePatt = "%s\TS.project.ini"; This will hold specifik stuff for that "project" like name, X32, x64 (or both), output DIR, and a "Also copy these files \ folders" and icon for each out file "name"
+Global Const $_TS_Project_Ts_PROJECT_INI = "TS.project.ini"
+Global Const $_TS_Project_FilePatt = "%s\" & $_TS_Project_Ts_PROJECT_INI; This will hold specifik stuff for that "project" like name, X32, x64 (or both), output DIR, and a "Also copy these files \ folders" and icon for each out file "name"
 
 
 ; $_resource_curFileNameDISPLAY : $oNamespace.raw : $item.cleanName : $item.paramsRaw
@@ -110,7 +113,7 @@ Global Const $_SCITE_HotkeyCollectionIniNames = [5, "run", "build_au3", "build_e
 Global Const $_SCITE_aCALLTIPS = ["@Private?3", "@Public?3", "@Readonly?3", "@Use?3", "@Namespace?3", "@MethodName?3", "@MethodParams?3", "@Extends?3", _
 "Class ($x = Func(Class....) Creates a new class)", _
 "Extension (Usage: $x = Func(Extension....) Creates an extension that can be used on a previously created Class)", _
-"Construct (Usage: $x = Func(Construct....) May only be used in a Class", _
+"Construct (Usage: $x = Func(Construct....) May only be used inside a Class", _
 "As (Usage: @Use ... As ....)", _
 "At (Usage: @Use ... At ....)", _
 "On (Usage: @Use ... On ....)", _
@@ -193,6 +196,12 @@ EndFunc
 
 
 #Region Error Related
+
+Func _TS_AbortedByUser($hParent = 0)
+	MsgBox($MB_ICONWARNING, $_TS_AppTitle, "Operation aborted by user", 0, $hParent)
+	Return False
+EndFunc
+
 Func _TS_SetError($iCode, $iExtended, $mReturn, $sText = "", $p1 = "", $p2 = "", $p3 = "")
 	Local $aRes = [$iCode, $iExtended, $mReturn, StringFormat($sText, $p1, $p2, $p3)]
 	_Array_Push($_resource_TS_aErrors, $aRes)

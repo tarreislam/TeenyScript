@@ -10,6 +10,7 @@ $Main = Func(ByRef $CmdLine)
 	EndIf
 
 	; Else
+	ConsoleWrite("Unnamed console application")
 
 
 EndFunc($CmdLine)

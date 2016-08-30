@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <object type="TAForm" name="gui_Project_Settings">
 	<properties>
-		<property name="Left" vt="Int16">691</property>
-		<property name="Top" vt="Int16">390</property>
+		<property name="Left" vt="Int16">448</property>
+		<property name="Top" vt="Int16">333</property>
 		<property name="Width" vt="Int16">489</property>
-		<property name="Height" vt="Int16">278</property>
+		<property name="Height" vt="Int16">306</property>
 		<property name="Caption" vt="String">Edit Project Settings</property>
 		<property name="Color" vt="Ident">clBtnFace</property>
 		<property name="Font.Charset" vt="Ident">DEFAULT_CHARSET</property>
@@ -36,7 +36,7 @@
 				<property name="Left" vt="Int16">240</property>
 				<property name="Top" vt="Int8">8</property>
 				<property name="Width" vt="Int16">225</property>
-				<property name="Height" vt="Int8">41</property>
+				<property name="Height" vt="Int8">57</property>
 				<property name="CtrlStyle" vt="Int32">1342308359</property>
 				<property name="CtrlExStyle" vt="Int8">0</property>
 				<property name="Caption" vt="String">Architecture  options</property>
@@ -48,7 +48,7 @@
 					<properties>
 						<property name="Left" vt="Int8">8</property>
 						<property name="Top" vt="Int8">16</property>
-						<property name="Width" vt="Int8">57</property>
+						<property name="Width" vt="Int8">49</property>
 						<property name="Height" vt="Int8">17</property>
 						<property name="Caption" vt="String">32 bit</property>
 						<property name="TabOrder" vt="Int8">0</property>
@@ -60,7 +60,7 @@
 				</object>
 				<object type="TARadio" name="gui_Project_Settings_radio_64_bit">
 					<properties>
-						<property name="Left" vt="Int8">72</property>
+						<property name="Left" vt="Int8">64</property>
 						<property name="Top" vt="Int8">16</property>
 						<property name="Width" vt="Int8">49</property>
 						<property name="Height" vt="Int8">17</property>
@@ -74,13 +74,27 @@
 				</object>
 				<object type="TARadio" name="gui_Project_Settings_radio_32_and_64_bit">
 					<properties>
-						<property name="Left" vt="Int16">128</property>
+						<property name="Left" vt="Int8">120</property>
 						<property name="Top" vt="Int8">16</property>
 						<property name="Width" vt="Int8">81</property>
 						<property name="Height" vt="Int8">17</property>
 						<property name="Caption" vt="String">32 &amp;&amp; 64 bit</property>
 						<property name="TabOrder" vt="Int8">2</property>
 						<property name="CtrlStyle" vt="Int32">1342242825</property>
+						<property name="CtrlExStyle" vt="Int8">0</property>
+						<property name="Resizing" vt="Set">DockHeight</property>
+					</properties>
+					<components/>
+				</object>
+				<object type="TACheckbox" name="gui_Project_Settings_checkbox_include_launcher">
+					<properties>
+						<property name="Left" vt="Int8">120</property>
+						<property name="Top" vt="Int8">32</property>
+						<property name="Width" vt="Int8">97</property>
+						<property name="Height" vt="Int8">17</property>
+						<property name="Caption" vt="String">Include launcher</property>
+						<property name="TabOrder" vt="Int8">3</property>
+						<property name="CtrlStyle" vt="Int32">1342242819</property>
 						<property name="CtrlExStyle" vt="Int8">0</property>
 						<property name="Resizing" vt="Set">DockHeight</property>
 					</properties>
@@ -190,7 +204,7 @@
 		<object type="TAGroup" name="">
 			<properties>
 				<property name="Left" vt="Int16">240</property>
-				<property name="Top" vt="Int8">56</property>
+				<property name="Top" vt="Int8">64</property>
 				<property name="Width" vt="Int16">225</property>
 				<property name="Height" vt="Int16">137</property>
 				<property name="CtrlStyle" vt="Int32">1342308359</property>
@@ -261,9 +275,9 @@
 		<object type="TAButton" name="gui_Project_Settings_btn_save">
 			<properties>
 				<property name="Left" vt="Int16">240</property>
-				<property name="Top" vt="Int16">200</property>
-				<property name="Width" vt="Int16">219</property>
-				<property name="Height" vt="Int8">33</property>
+				<property name="Top" vt="Int16">208</property>
+				<property name="Width" vt="Int16">227</property>
+				<property name="Height" vt="Int8">25</property>
 				<property name="Caption" vt="String">Verify &amp;&amp; Apply</property>
 				<property name="TabOrder" vt="Int8">3</property>
 				<property name="Color" vt="Ident">clBtnFace</property>
@@ -315,6 +329,21 @@
 					<components/>
 				</object>
 			</components>
+		</object>
+		<object type="TAButton" name="gui_Project_Settings_btn_update_ts_ver">
+			<properties>
+				<property name="Left" vt="Int8">8</property>
+				<property name="Top" vt="Int16">240</property>
+				<property name="Width" vt="Int16">227</property>
+				<property name="Height" vt="Int8">25</property>
+				<property name="Caption" vt="String">Update project's TeenyScript version</property>
+				<property name="TabOrder" vt="Int8">5</property>
+				<property name="Color" vt="Ident">clBtnFace</property>
+				<property name="CtrlStyle" vt="Int32">1342373888</property>
+				<property name="CtrlExStyle" vt="Int8">0</property>
+				<property name="Resizing" vt="Set">DockWidth, DockHeight</property>
+			</properties>
+			<components/>
 		</object>
 	</components>
 </object>

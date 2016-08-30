@@ -41,18 +41,17 @@ Func _SciTe_runFile($sFile, $sDisplayFile)
 EndFunc   ;==>_SciTe_runFile
 
 
-Func _SciTe_compileFile($sFile, $cmdLine_OUT = False, $cmdLine_ICON = False, $cmdLine_ARCH = "32", $cmdLine_ProjectName = "Unnamed TeenyScript", $cmdLine_ProjectVersion = $_TS_AppVer, $cmdLine_Copyright = @UserName, $cmdLine_Type = "gui")
+Func _SciTe_compileFile($sFile, $cmdLine_OUT = False, $cmdLine_ICON = False, $cmdLine_ARCH = "32", $cmdLine_ProjectName = False, $cmdLine_ProjectVersion = $_TS_AppVer, $cmdLine_Copyright = @UserName, $cmdLine_Type = "gui")
+
 	If $cmdLine_ARCH == "96" Then
 		_SciTe_compileFile($sFile, $cmdLine_OUT, $cmdLine_ICON, "32", $cmdLine_ProjectName, $cmdLine_ProjectVersion, $cmdLine_Copyright, $cmdLine_Type)
 		_SciTe_compileFile($sFile, $cmdLine_OUT, $cmdLine_ICON, "64", $cmdLine_ProjectName, $cmdLine_ProjectVersion, $cmdLine_Copyright, $cmdLine_Type)
 		Return True
 	EndIf
 
-	$cmdLine_OUT = StringFormat("%s\%s_x%d.exe", $cmdLine_OUT, $cmdLine_ProjectName, $cmdLine_ARCH)
+	$cmdLine_OUT = $cmdLine_OUT ? StringFormat("%s\%s_x%d.exe", $cmdLine_OUT, $cmdLine_ProjectName, $cmdLine_ARCH) : $cmdLine_OUT
 
-
-	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Compiling '%s'", ($cmdLine_OUT ? $cmdLine_OUT : StringReplace($sFile, ".au3", ".exe") ))
-
+	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Compiling '%s' -> '%s'", $sFile, ($cmdLine_OUT ? $cmdLine_OUT : StringReplace($sFile, ".au3", ".exe") ))
 
 	;What program to use
 	Local $program = $cmdLine_ARCH == "32" ? $_AU3_AU2EXE : $_AU3_AU2EXE_64

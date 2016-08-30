@@ -47,7 +47,55 @@ Func _ConsoleWrite($sText, $c, $p1 = "", $p2 = "", $p3 = "", $p4 = "", $p5 = "")
 	Return ConsoleWrite($s)
 EndFunc
 
+; Will copy the content of a whole directory, instead of just the folder
+Func _DirCopyContent($sSourceDir, $sTargetDir, $hParent = 0)
+	If Not FileExists($sSourceDir) Then
+		MsgBox($MB_ICONWARNING, "", StringFormat("The source directory '%s' does not exist", $sSourceDir), 0, $hParent)
+		Return SetError(1, 0, 0)
+	EndIf
+	If Not FileExists($sTargetDir) Then
+		MsgBox($MB_ICONWARNING, "", StringFormat("The target directory '%s' does not exist", $sTargetDir), 0, $hParent)
+		Return SetError(2, 0, 0)
+	EndIf
 
+	Local $_FileListToArrayRec = _FileListToArrayRec($sSourceDir, "*", $FLTAR_FILESFOLDERS, $FLTAR_RECUR, $FLTAR_NOSORT, $FLTAR_RELPATH)
+	For $i = 1 To $_FileListToArrayRec[0]
+		Local $cSource = StringFormat("%s\%s", $sSourceDir, $_FileListToArrayRec[$i])
+		Local $cTarget = StringFormat("%s\%s", $sTargetDir, $_FileListToArrayRec[$i])
+		Switch FileGetAttrib($cSource)
+			Case "D"; Create target directory if source is a directory
+				If Not DirCreate($cTarget) Then
+					MsgBox($MB_ICONWARNING, "", "An error occured while creating the directory: " & $cTarget, 0, $hParent)
+					Return SetError(3, 0, 0)
+				EndIf
+			Case Else; File
+				If Not FileCopy($cSource, $cTarget, $FC_OVERWRITE) Then
+					MsgBox($MB_ICONWARNING, "", StringFormat("An error occured while copying the file '%s' to '%s'", $cSource, $cTarget), 0, $hParent)
+					Return SetError(4, 0, 0)
+				EndIf
+		EndSwitch
+	Next
+	Return True
+EndFunc
+
+; From https://www.autoitscript.com/autoit3/docs/functions/FileGetSize.htm
+;ResourceGetSize, dir or file. dosent matter
+Func _rGetSize($sFileName)
+	Local $iBytes
+	If FileGetAttrib($sFileName) == "D" Then
+		$iBytes = DirGetSize($sFileName)
+	Else
+		$iBytes = FileGetSize($sFileName)
+	EndIf
+    Local $iIndex = 0, $aArray = ['bytes', 'KB', ' MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+    While $iBytes > 1023
+        $iIndex += 1
+        $iBytes /= 1024
+    WEnd
+    Return StringFormat("%d %s", Round($iBytes), $aArray[$iIndex])
+EndFunc   ;==>ByteSuffix
+
+#Region File info snipplets
 Func isEmpty($str)
 	Return StringRegExp($str, "^\s*$")
 EndFunc   ;==>isEmpty
@@ -55,9 +103,6 @@ EndFunc   ;==>isEmpty
 Func escapeForwardSlash($str)
 	Return StringReplace($str, "/", "\/")
 EndFunc   ;==>escapeForwardSlash
-
-#Region File info snipplets
-
 
 Func getFromFilepath_basedir($sPath); (c:\path\to)\filename.ext (Will POP the last DIR if no (file.ext) exists
 	Return StringRegExpReplace($sPath, "(.*)\\.*", "$1")
@@ -79,7 +124,6 @@ Func getFromFilepath_all_asArray($sPath); (c:\path\to)\(filename.etc).(ext)
 	Local $aRet = StringRegExp($sPath, "(.*)\\(.*)\.(.*)", 3)
 	Return $aRet;[0] = filpath without ending slash, [1] = filename including DOTS, [2] = extension (Excluding dots)
 EndFunc
-#EndRegion
 
 Func getRandomString($len, $fill = False)
 	Local $ret = ""
@@ -134,3 +178,4 @@ Func STR_PAD($str, $direction = $STR_PAD_RIGHT, $MaxWidth = 47, $fill = "#")
 
 	Return $sRet
 EndFunc
+#EndRegion

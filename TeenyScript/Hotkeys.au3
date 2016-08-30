@@ -26,51 +26,58 @@
 #ce
 Func _TS_HOTKEY_RUN()
 
-	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName
+	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName, [2] = $oProject
 	If Not IsArray($aFile) Then Return False
+	Local Const $sAu3FileName = $aFile[0]
+	Local Const $sTsFileName = $aFile[1]
+	Local Const $oProject = $aFile[2]
 
-	_Scite_runFile($aFile[0], $aFile[1]); Bör inte vara här? Denna funktion ska ba baba
+	If IsObj($oProject) Then _TS_Project_VCS($oProject)
 
-	If Not FileDelete($aFile[0]) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $aFile[0]))
+	_Scite_runFile($sAu3FileName, $sTsFileName)
+
+	If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
 EndFunc
 
 Func _TS_HOTKEY_BUILD_AU3()
 
-	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName
+	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName, [2] = $oProject
 	If Not IsArray($aFile) Then Return False
+	Local Const $sAu3FileName = $aFile[0]
+	Local Const $sTsFileName = $aFile[1]
+	Local Const $oProject = $aFile[2]
 
-	$ConsoleWrite("Conversion from '%s' to '%s' was successful!", "g", $aFile[1], $aFile[0])
+	If IsObj($oProject) Then _TS_Project_VCS($oProject); Run Version Control System
+
+	$ConsoleWrite("Conversion from '%s' to '%s' was successful!", "g", $sTsFileName, $sAu3FileName)
 EndFunc
 
 Func _TS_HOTKEY_BUILD_EXE()
 
-	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName
+	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName, [2] = $oProject
 	If Not IsArray($aFile) Then Return False
+	Local Const $sAu3FileName = $aFile[0]
+	Local Const $sTsFileName = $aFile[1]
+	Local Const $oProject = $aFile[2]
 
+	If IsObj($oProject) Then
+		$ConsoleWrite("Found %s, compiling with options", "g", $_TS_Project_Ts_PROJECT_INI)
+		_TS_Project_VCS($oProject); Run Version Control System
 
-	; Check if project file is found3d
-	Local $sProjectIniFile = StringFormat($_TS_Project_FilePatt, getFromFilepath_basedir($aFile[0]))
-	If FileExists($sProjectIniFile) Then
-		$ConsoleWrite("Found TS.project.ini, now compiling with options", "g")
-
-		Local Const $getFromFilepath_basedir = getFromFilepath_basedir(_SciTe_getOpenFileName())
-		Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
-		Local Const $oProjectSettings = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir)
-
-		_SciTe_compileFile($aFile[0], _
-		$oProjectSettings.dir, _
-		$oProjectSettings.icon, _
-		$oProjectSettings.arch, _
-		$oProjectSettings.name, _
-		$oProjectSettings.ver, _
-		$oProjectSettings.copyright, _
-		$oProjectSettings.type)
+		_SciTe_compileFile($sAu3FileName, _
+		$oProject.dir, _
+		$oProject.icon, _
+		$oProject.arch, _
+		$oProject.name, _
+		$oProject.ver, _
+		$oProject.copyright, _
+		$oProject.type)
 
 	Else
-		_SciTe_compileFile($aFile[0])
+		_SciTe_compileFile($sAu3FileName)
 	EndIf
 
-	If Not FileDelete($aFile[0]) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $aFile[0]))
+	If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
 EndFunc
 
 Func _TS_HOTKEY_SET_OPT()

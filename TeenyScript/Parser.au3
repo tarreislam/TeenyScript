@@ -60,10 +60,12 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 	;If _TS_Error() Then Return _TS_SetError(3, 0, 0, "_TS_ParseFile failed to parse '%s'", $sFileName)
 
 	Local $aFileInfo = getFromFilepath_all_asArray($aNew_ts_2_au3_File[0]); C:\x\x\x.ts.au3
+	Local $getFromFilepath_basedir = $aFileInfo[0]
 	$aFileInfo[1] = StringRegExpReplace($aFileInfo[1], "(.*)\.ts", "$1")
 
 	; ~ New file name c:\x\x.ts -> c:\x\x.au3 (Actual file)
-	Local Const $sAu3FileName = StringFormat("%s\%s.au3", $aFileInfo[0], $aFileInfo[1])
+	Local Const $sAu3FileName = StringFormat("%s\%s.au3", $getFromFilepath_basedir, $aFileInfo[1])
+	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
 
 	; Create the new file
 	Local const $fHandle = FileOpen($sAu3FileName, $FO_OVERWRITE)
@@ -78,7 +80,10 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 	FileWriteLine($fHandle, $_resource_ffDebug); Write the DEBUG data (ONLY on RUN)
 	FileClose($fHandle)
 
-	Local $aRet = [$sAu3FileName, $sFileName]
+	; Look for project settings (if any), checked with isObj in Hotkeys
+	Local $oProject = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir)
+
+	Local $aRet = [$sAu3FileName, $sFileName, $oProject]
 
 	Return $aRet
 EndFunc
