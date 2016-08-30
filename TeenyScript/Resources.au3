@@ -122,6 +122,8 @@ Global Const $_name_AOMethods = getRandomString(5)
 Global Const $_name_List = getRandomString(6)
 ; ~ New random names for EzArray (Return [1,2,3,4,5]) GÖR SÅ
 Global Const $_name_ezArray = getRandomString(7)
+; ~ New random names for EzArrayClosure
+Global Const $_name_ezarrayClosure = getRandomString(8)
 
 ;  ---------------------------------------------------------
 ; |					Teeny script resources					|

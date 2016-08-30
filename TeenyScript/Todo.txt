@@ -16,7 +16,7 @@ Förberedelse för nestade listor finns, verkställ dem med funktionen (Kolla RE.au
 
 Gör så att EzArray får samma effekt som $re_func_closure, gör en stack i dåvarande funkton
 
-
+(?mi)[,(](\[.*\])[,\)]
 $main = func()
 
 $MyMethod().Test("First",[[]])

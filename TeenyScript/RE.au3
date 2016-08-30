@@ -54,7 +54,11 @@ Global Const $re_func_properties = "(?i)(?:@|)(private|public|readonly)\h*\$" & 
 ;	Return [1, 2, [1, 2], 4, 5]
 ;							$_R_A_N_D_0 = [1, 2, [1, 2], 4, 5]
 ;							Return $_R_A_N_D_0
-Global Const $re_array_ezArray = "(?i)^\h*(?:return)\h+\[(.*)\]"
+Global Const $re_array_ezArray = "(?i)\h*return\h+(\[.*\])"
+;	MyFunc([1, 2, 3, 4, 5], $etc)
+;							$_R_A_N_D_0 = [1, 2, 3, 4, 5]
+;							MyFunc($_R_A_N_D_0, $etc)
+Global Const $re_array_ezArrayClosure = "(?mi)(.*[,(])\h*(\[.+\])\h*([,\)].*)"
 
 ;	@Private $this.name = [1, []]
 ;							$_aName = [1, []]

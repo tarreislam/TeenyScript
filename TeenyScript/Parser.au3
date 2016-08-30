@@ -276,6 +276,9 @@ Func _TS_Compose(ByRef $outer, ByRef $aAliasUsage, Const $sFilenameAsBinary, Con
 					_TS_Compose_MagicProperties($item, $aMethods, $aProperties)
 				EndIf
 
+				; Ez array
+				_TS_Compose_EzArray($item)
+
 				; Parse Heredoc
 				_TS_Compose_Heredoc($item)
 
@@ -285,7 +288,7 @@ Func _TS_Compose(ByRef $outer, ByRef $aAliasUsage, Const $sFilenameAsBinary, Con
 				; Parse closures (will append to $_resource_ffBuffer)
 				_TS_Compose_Closure($item)
 
-				; Misc
+				; Macro Misc
 				_TS_Compose_Macro_Misc($item, $oNamespace)
 
 				; Always last (will append to $_resource_ffBuffer)
@@ -305,6 +308,20 @@ EndFunc
 
 
 #Region Features
+
+Func _TS_Compose_EzArray(ByRef $item)
+
+	; Return [1,2,3,5]
+	$item.content = StringRegExpReplace($item.content, $re_array_ezArray, StringFormat("Local $%s = $1" & @CRLF & "Return $%s", $_name_ezArray, $_name_ezArray))
+
+	; In function
+	Local $i = 0
+	Do
+		$item.content = StringRegExpReplace($item.content, $re_array_ezArrayClosure, StringFormat("Local $%s = $2" & @CRLF & "$1$%s$3", $_name_ezarrayClosure & $i, $_name_ezarrayClosure & $i), 0)
+		$i+=1
+	Until Not @extended
+
+EndFunc
 
 Func _TS_Compose_Methods(ByRef $item)
 	Local $z = $_resource_sFuncCount + 1, $sAO_MetodName = "", $aMethods = StringRegExp($item.content, $re_func_getNested, 4), $aMethods_len = UBound($aMethods)
