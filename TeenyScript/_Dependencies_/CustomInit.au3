@@ -61,6 +61,8 @@ Func _TS_ErrFunc($_TS_oError)
 			'> ' & @TAB & '~ Code: ' & $Code & @CRLF & _
 			'> ' & @TAB & '~ Reason: ' & $_TS_oError.windescription & _ ;Sometains contains a @CR|*LF
 			'+ ' & @TAB & '~ Problem: ' & $Help & _
+			'+ ' & @TAB & '~ Click below to goto error' & @CRLF & _
+			StringFormat('"%s"(%d) : error: %s', $TS_DEBUG_Filepath, $TS_DEBUG_Line, $_TS_oError.windescription) & _
 			'! ' & @TAB & 'COM Error End...' & @CRLF & @CRLF
 
 	Switch $_TS_bErrorNotify

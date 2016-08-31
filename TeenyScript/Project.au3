@@ -68,7 +68,7 @@ Func _TS_Project_VCS($oProject, $hParent = 0); This is used when compiling, runn
 	Return True
 EndFunc
 
-Func _TS_Project_VCS_DisplayErr($oProject, $sText, $hParent = 0, $iCode = 0)
+Func _TS_Project_VCS_DisplayErr(ByRef $oProject, $sText, $hParent = 0, $iCode = 0)
 	$sText = StringFormat("Warning! your version of TeenyScript (%s) is diffrent from the project '%s' version (%s). %s.", _
 	$_TS_AppVer, _
 	$oProject.name, _
