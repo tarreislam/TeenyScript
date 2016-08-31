@@ -158,15 +158,14 @@ Func _TS_Compose_Include_Rec(Const $sCurrentFileBuffer, Const $sFileName, $sPrev
 						;MsgBox(0,"What we goin 4",getFromFilepath_basedir($sPrevFileName) & @CRLF & $sFileName & @CRLF &  $sFileName_relative_path& @CRLF &$aRe_TS_CurFile)
 						if FileExists(StringFormat("%s\%s", $_AU3_INCLUDE_DIR, $aRe_TS_CurFile)) Then
 							; Include as it is (No sub dir)
-							$_resource_ffBuffer &= ";TS_COM_DEBUG:" & $aRe_TS_CurFile & @CRLF & _
+							$_resource_ffBuffer &= StringFormat($_TS_Debug, StringFormat("%s\%s", $_AU3_INCLUDE_DIR, $aRe_TS_CurFile), "Unkown", "Unkown", "Unkown") & @CRLF & _
 							StringFormat("#Include <%s>", $aRe_TS_CurFile) & @CRLF
-
 
 						ElseIf FileExists(StringFormat("%s\%s", $sFileName_relative_path, $aRe_TS_CurFile)) Then
 							;Include with relative dir from the file that is bein run
 							Local $sRelativePathAu3 = StringReplace($sFileName_relative_path & "\", "\" & getFromFilepath_basedir($sPrevFileName), "")
 
-							$_resource_ffBuffer &= ";TS_COM_DEBUG:" & $sRelativePathAu3 & @CRLF & _
+							$_resource_ffBuffer &= StringFormat($_TS_Debug, StringFormat("%s\%s", $sFileName_relative_path, $aRe_TS_CurFile), "Unkown", "Unkown", "Unkown")  & @CRLF & _
 							StringFormat("#Include <%s%s>", $sRelativePathAu3, $aRe_TS_CurFile) & @CRLF
 						Else
 							Return _TS_SetError(2, 0, 0, "The file '%s' was not found in @ScriptDir\... or in Au3\Includes\...", $aRe_TS_CurFile)
