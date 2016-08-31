@@ -1,35 +1,9 @@
 
 # # # # # # TODO  buggfixar # # # #
-FIxa LazyLoad (Den laddas även fast man inte har skit att göra)
 Kolla att @Namespace är det första som presenteras i filen (Om den finns) annars, kasta _TS_error
-
-
-
-
 
  # # # # # # # # # Todo features # # # # # # # #
 
 Interfaces
 Förberedelse för nestade listor finns, verkställ dem med funktionen (Kolla RE.au3) och Lists i parser
-
-
-
-Gör så att EzArray får samma effekt som $re_func_closure, gör en stack i dåvarande funkton
-
-(?mi)[,(](\[.*\])[,\)]
-$main = func()
-
-$MyMethod().Test("First",[[]])
-
-$MySecondMethod([], 25)
-
-$WontWork([]
-
-$WontWork2[])
-local $notme = [1, 2,3, 5,]
-$notme[0]
-
-
-	return [1,2,3,4,5]
-endfunc
 

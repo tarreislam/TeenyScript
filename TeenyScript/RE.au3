@@ -60,10 +60,22 @@ Global Const $re_array_ezArray = "(?i)\h*return\h+(\[.*\])"
 ;							MyFunc($_R_A_N_D_0, $etc)
 Global Const $re_array_ezArrayClosure = "(?mi)(.*[,(])\h*(\[.+\])\h*([,\)].*)"
 
+;	MsgBox(0, 0, $MyFunc()[0]) Or StringSplit("a b c"," ")
+;							$_R_A_N_D_0 = $MyFunc()
+;							MsgBox(0, 0, $_R_A_N_D_0[0])
+; Global Const $re_array_funcAccess = "(?mi)(\$" & $re_AcceptedNameComObject & "|" & $re_AcceptedVarName & ")(\(.*\))\[([0-9]+)\]" (Not now mate!)
 ;	@Private $this.name = [1, []]
 ;							$_aName = [1, []]
 ;							$AOclass.AddProperty("name", $ELSCOPE_PUBLIC, $_aName)
 Global Const $re_array_ClassProp = "^(\[.*\])$"
+
+;  ---------------------------------------------------------
+; |					Autoit Enhacnhments						|
+;  ---------------------------------------------------------
+
+; Allow the user to use For $x in Function() instead of just variable names
+; Works with com objects and namespaces Tarre!
+Global Const $re_Au3Enhancement_ForIn = "(?i)For\h*(\$" & $re_AcceptedVarName & ")\h*In\h*((?:\$" & $re_AcceptedNameComObject & "|[a-z0-9._\/\$]+)\(.*\))"
 
 ;  ---------------------------------------------------------
 ; |							@Macros 						|
@@ -145,9 +157,8 @@ Global Const $re_TS_Debug = '(?si)#DEBUG(.+)'; This will copy raw after #DEBUG (
 Global Const $re_SciTE_TSpath = "( - SciTE.*)"
 
 
-
 ;  ---------------------------------------------------------
-; |				Parsing error RE							|
+; |						Parsing error RE					|
 ;  ---------------------------------------------------------
 
 ; ~ List keys can only contain a-z, 0-9, _, $variable, $com.object

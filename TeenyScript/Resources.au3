@@ -107,23 +107,20 @@ Global Const $_SCITE_aUSER_UDFS = ["@private", "@public", "@readonly", "@use", "
 ;  ---------------------------------------------------------
 ; |				Outside function names						|
 ;  ---------------------------------------------------------
+
 Global Const $_name_Function = getRandomString(2)
 Global Const $_name_Closure = getRandomString(4)
 
 ;  ---------------------------------------------------------
 ; |					Inside function names					|
 ;  ---------------------------------------------------------
-; ~ New random names for AutoitObject_Class()
+
 Global Const $_name_AOClass = getRandomString(3)
-; ~ New random names for __Methods__ and __Properties__ Arrays
 Global Const $_name_AOProperties = getRandomString(4)
 Global Const $_name_AOMethods = getRandomString(5)
-; ~ New random names for Lists
 Global Const $_name_List = getRandomString(6)
-; ~ New random names for EzArray (Return [1,2,3,4,5]) GÖR SÅ
 Global Const $_name_ezArray = getRandomString(7)
-; ~ New random names for EzArrayClosure
-Global Const $_name_ezarrayClosure = getRandomString(8)
+Global Const $_name_Au3Enhancement_ForIn = getRandomString(8)
 
 ;  ---------------------------------------------------------
 ; |					Teeny script resources					|

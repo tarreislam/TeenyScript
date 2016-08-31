@@ -276,8 +276,11 @@ Func _TS_Compose(ByRef $outer, ByRef $aAliasUsage, Const $sFilenameAsBinary, Con
 					_TS_Compose_MagicProperties($item, $aMethods, $aProperties)
 				EndIf
 
-				; Ez array
-				_TS_Compose_EzArray($item)
+				; Au3 Enhanchments
+				_TS_Compose_Au3Enhancements($item)
+
+				; Arrays
+				_TS_Compose_Arrays($item)
 
 				; Parse Heredoc
 				_TS_Compose_Heredoc($item)
@@ -308,16 +311,27 @@ EndFunc
 
 
 #Region Features
+Func _TS_Compose_Au3Enhancements(ByRef $item)
 
-Func _TS_Compose_EzArray(ByRef $item)
-
-	; Return [1,2,3,5]
-	$item.content = StringRegExpReplace($item.content, $re_array_ezArray, StringFormat("Local $%s = $1" & @CRLF & "Return $%s", $_name_ezArray, $_name_ezArray))
-
-	; In function
+	; For $x in ~mixed~ Enhancement
 	Local $i = 0
 	Do
-		$item.content = StringRegExpReplace($item.content, $re_array_ezArrayClosure, StringFormat("Local $%s = $2" & @CRLF & "$1$%s$3", $_name_ezarrayClosure & $i, $_name_ezarrayClosure & $i), 0)
+		$item.content = StringRegExpReplace($item.content, $re_Au3Enhancement_ForIn, StringFormat("Local Const $%s = $2" & @CRLF & "For $1 In $%s", $_name_Au3Enhancement_ForIn & $i, $_name_Au3Enhancement_ForIn & $i))
+		$i+=1
+	Until Not @extended
+
+EndFunc
+
+Func _TS_Compose_Arrays(ByRef $item)
+	; They can all share the same counter
+	Local $i = 0
+	; ~ Ez array
+	; Return [1,2,3,5]
+	$item.content = StringRegExpReplace($item.content, $re_array_ezArray, StringFormat("Local $%s = $1" & @CRLF & "Return $%s", $_name_ezArray & $i, $_name_ezArray & $i))
+
+	; Func([1,2,3])
+	Do
+		$item.content = StringRegExpReplace($item.content, $re_array_ezArrayClosure, StringFormat("Local $%s = $2" & @CRLF & "$1$%s$3", $_name_ezArray & $i, $_name_ezArray & $i), 0)
 		$i+=1
 	Until Not @extended
 
