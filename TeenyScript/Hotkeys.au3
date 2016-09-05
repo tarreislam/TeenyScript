@@ -38,8 +38,6 @@ Func _TS_HOTKEY_RUN()
 	; display da file
 	_Scite_runFile($sAu3Filename_tmp, $sTsFileName)
 
-
-	;If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
 EndFunc
 
 Func _TS_HOTKEY_BUILD_AU3()
@@ -52,8 +50,11 @@ Func _TS_HOTKEY_BUILD_AU3()
 	Local Const $oProject = $aFile[3]
 
 	If IsObj($oProject) Then _TS_Project_VCS($oProject); Run Version Control System
-	; Copy the file we parsed from the tmp dir
-	FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
+	; Copy the file we parsed from the tmp dir if not in full cache mode
+	If Not $_SMARTCACHE_PERFECT_CACHE Then
+		FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
+	EndIf
+
 	$ConsoleWrite("Conversion from '%s' -> '%s' was successful!", "g", $sTsFileName, $sAu3FileName)
 
 EndFunc

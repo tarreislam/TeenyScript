@@ -68,7 +68,6 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 	Local $oProject = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir)
 
 	; if not perfect cache
-	MsgBox(0, "Perfect cache?", $_SMARTCACHE_PERFECT_CACHE)
 	If Not $_SMARTCACHE_PERFECT_CACHE Then
 		_TS_Namespace_GetAll($_resource_sExecFile); Get all namespaces
 		Local Const $aNew_ts_2_au3_File = _TS_ParseFile($sFileName, $sFileName);Returns [0] = Full file path, [1] = Parsed content of file(s)
