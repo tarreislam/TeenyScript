@@ -1,0 +1,6 @@
+1. Build TeenyScript.au3 to .exe (Its important to keep the TeenyScript.exe file in the same directory)
+2. Open TeenyScript.exe and follow the steps (if any)
+3. Code : D
+
+Notes:
+The hotkeys will be the keys you assign within TS, that means TeenyScript does not listen to sublime commands

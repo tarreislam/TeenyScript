@@ -41,7 +41,7 @@ Global Const $re_AcceptedNamespaceAs = "[a-z]+" ;
 ; |					Function parsing related 				|
 ;  ---------------------------------------------------------
 ;Global Const $re_func_getNested = "(?mi)^\h*(\$(" & $re_AcceptedVarName & ")\h*=)\h*func\h*\((.+|)\).*\n((?:\h*+(?!(?:(?:\$" & $re_AcceptedVarName & "\h*=\h*|)func\h*\(.+|\)|endfunc(?:[^\n]*))\h*$)[^\n]*\n|(?R)\n)*)\h*endfunc\h*([^\n]*)$"
-Global Const $re_func_getNested = "(?mi)^\h*(?:(@Private|@Public|)\h*)(\$(" & $re_AcceptedVarName & ")\h*=)\h*func\h*\((.+|)\).*\n((?:\h*+(?!(?:(?:(@Private|@Public|)\h*)(?:\$" & $re_AcceptedVarName & "\h*=\h*|)func\h*\(.+|\)|endfunc(?:[^\n]*))\h*$)[^\n]*\n|(?R)\n)*)\h*endfunc\h*([^\n]*)$"
+Global Const $re_func_getNested = "(?mi)^\h*(?:(@Private|@Public|@Readonly|)\h*)(\$(" & $re_AcceptedVarName & ")\h*=)\h*func\h*\((.+|)\).*\n((?:\h*+(?!(?:(?:(@Private|@Public|@Readonly|)\h*)(?:\$" & $re_AcceptedVarName & "\h*=\h*|)func\h*\(.+|\)|endfunc(?:[^\n]*))\h*$)[^\n]*\n|(?R)\n)*)\h*endfunc\h*([^\n]*)$"
 Global Const $re_func_closure = "(?mi)(\(|,)\h*\n*Func\((.*)\)\n*([\s\S]+?)\h+(?:!?\(endFunc\))" ; Functions that can be passed as arguments in a function (Not recursive)
 Global Const $re_func_properties = "(?i)(?:@|)(private|public|readonly)\h*\$" & $_TS_ObjectName & "\.(" & $re_AcceptedVarName & ")\h*=\h*([^\n]+)"
 ;Global Const $re_func_interface = "(?i)\$([a-z]+)\h*=\h*Func\(([^)]+)\)"; Interface detection
@@ -84,7 +84,8 @@ Global Const $re_Au3Enhancement_ForIn = "(?i)For\h*(\$" & $re_AcceptedVarName & 
 Global Const $re_macro_useExtension = "(?i)\@Extends\h+(" & $re_AcceptedNamespace & "\/|)\$(" & $re_AcceptedVarName & ")" ; @Extends path/to/ext/$extension
 Global Const $re_macro_useNamespace = "(?i)\@Use\h+(" & $re_AcceptedNamespace & ")\h+(?:In|At|On|As)\h+(" & $re_AcceptedNamespaceAs & ")" ; will detect @Use x/x In At On As x
 Global Const $re_macro_getNamespace = "(?i)\@Namespace" ; this will be used to retrive the namespace name as a Macro
-Global Const $re_macro_setNamespace = "(?i)^\h*\@Namespace\h+(" & $re_AcceptedNamespace & ")"; WHen assigning namespaces
+Global Const $re_macro_setNamespace = "(?i)\h*\@Namespace\h+(" & $re_AcceptedNamespace & ")"; WHen assigning namespaces
+Global Const $re_keyword_setNamspaceSelf = "(?i)self::(\$" & $re_AcceptedVarName & ")"; Instead of using @Use x in Y for accesing the current scope
 Global Const $re_macro_getMethodName = "(?i)(\@MethodName)"
 Global Const $re_macro_getMethodParams = "(?i)(\@MethodParams)"
 
@@ -156,6 +157,17 @@ Global Const $re_TS_Debug = '(?si)#DEBUG(.+)'; This will copy raw after #DEBUG (
 ;  ---------------------------------------------------------
 Global Const $re_SciTE_TSpath = "( - SciTE.*)"
 
+;  ---------------------------------------------------------
+; |						Sublime RE							|
+;  ---------------------------------------------------------
+Global Const $re_Sublime_TSpath = "(?i)( - Sublime Text.*)"
+;  ---------------------------------------------------------
+; |				<><		Comments ....			    		|
+;  ---------------------------------------------------------
+
+Global Const $re_Comment_OneLine = '(?m)^((?:[^''";]*([''"]).*?\2)*[^;]*);.*$'; replace with \1 Credits to Include_Helper.au3 at SublimeText autoit package
+;Global Const $re_Comment_OneLine = '(\".*\"|[^"]);.*'
+Global Const $re_Comment_Block = '#(?:cs|comments-start)[^#]*#(?:ce|comments-end)'; replace with nothing
 
 ;  ---------------------------------------------------------
 ; |						Parsing error RE					|
@@ -163,4 +175,5 @@ Global Const $re_SciTE_TSpath = "( - SciTE.*)"
 
 ; ~ List keys can only contain a-z, 0-9, _, $variable, $com.object
 Global Const $re_parseErr_listKey = "(?i)(?:^[0-9a-z_]+$|\$" & $re_AcceptedNameComObject & ")"
+Global Const $re_parseErr_self = '(?i)^[^"]*self::'; self:: error check
 

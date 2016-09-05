@@ -24,14 +24,17 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 #ce
+#AutoIt3Wrapper_Change2CUI=Y
 #NoTrayIcon
 Opt("GUIOnEventMode",1)
+;Opt('TrayIconDebug', 1)
 #include <WindowsConstants.au3>
 #include <FileConstants.au3>
 #include <File.au3>
 #include "TeenyScript\_Dependencies_\AutoitObject.au3"
 #include "TeenyScript\_Dependencies_\CustomInit.au3"
 #include "TeenyScript\_Array.au3"
+#include "TeenyScript\SmartCache.au3"
 #include "TeenyScript\Helpers.au3"
 #include "TeenyScript\Resources.au3"
 #include "TeenyScript\RE.au3"
@@ -41,22 +44,6 @@ Opt("GUIOnEventMode",1)
 #include "TeenyScript\Project.au3"
 #include "TeenyScript\GuiOpt.au3"
 
-#Region Pre-checks & warnings
-If @Compiled Then
-	MsgBox($MB_ICONERROR, $_TS_FullAppTitle, StringFormat("It is not recomended to compile %s, since it uses SciTE for console output...", $_TS_AppTitle))
-	Exit
-EndIf
-If Not $_SCITE_HWND Then
-	MsgBox($MB_ICONERROR, $_TS_FullAppTitle, StringFormat("Could not find the SciTe window handle. Make sure you are running %s in SciTe.", $_TS_AppTitle))
-	Exit
-EndIf
-If Not FileExists($_AU3_AU2EXE) Then
-	MsgBox($MB_ICONWARNING, $_TS_FullAppTitle, StringFormat("The file '%s' was not found, this will prevent you from compiling the script to .exe", $_AU3_AU2EXE))
-EndIf
-If Not FileExists($_SCITE_TIDY) Then
-	MsgBox($MB_ICONWARNING, $_TS_FullAppTitle, StringFormat("The file '%s' was not found, this will prevent you from using SciTE Tidy-up.", $_SCITE_TIDY))
-EndIf
-#EndRegion Pre-checks
 
 _TS_Init()
 

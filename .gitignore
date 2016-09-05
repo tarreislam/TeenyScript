@@ -1,3 +1,4 @@
 backup/
 Tests/
 logs/
+*.exe

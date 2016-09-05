@@ -47,6 +47,10 @@ Func _TS_ErrFunc($_TS_oError)
 		$pos-=1; Go backwards to look for refrences
 	WEnd
 	FileClose($fHandle)
+	If Not IsArray($aTry) Then
+
+		Local $aTry = ["Unkown", "Unkown", "Unkown", "Unkown"]
+	EndIf
 
 	Local Const $TS_DEBUG_Filepath = $aTry[0]
 	Local Const $TS_DEBUG_Namespace = $aTry[1]
@@ -55,9 +59,9 @@ Func _TS_ErrFunc($_TS_oError)
 	Local Const $TS_DEBUG_Line = _TS_Debug_GetLine($TS_DEBUG_Filepath, $Code); Search for the file in .ts code
 
 	; Poor choice of name, i know, im working at 20 things at a time
-	Local Const $Line2Use = ($TS_DEBUG_Line > 0 ? StringFormat("On Line: %d", $TS_DEBUG_Line) : "Unid Line number")
+	Local Const $Line2Use = ($TS_DEBUG_Line > 0 ? StringFormat("On Line: %d", $TS_DEBUG_Line) : "Unid Line number, fallback: " & $_TS_oError.scriptline)
 
-	Local $_TS_LastErrMsg = '!' & @TAB & StringFormat("COM Error In '%s'. @  %s/$%s = Func(%s) %s", $TS_DEBUG_Filepath, $TS_DEBUG_Namespace, $TS_DEBUG_Funcname, $TS_DEBUG_FuncParams, $Line2Use) & @CRLF & _
+	Local $_TS_LastErrMsg = '!' & @TAB & StringFormat("COM Error In '%s'. @  %s::$%s(%s) %s", $TS_DEBUG_Filepath, $TS_DEBUG_Namespace, $TS_DEBUG_Funcname, $TS_DEBUG_FuncParams, $Line2Use) & @CRLF & _
 			'> ' & @TAB & '~ Code: ' & $Code & @CRLF & _
 			'> ' & @TAB & '~ Reason: ' & $_TS_oError.windescription & _ ;Sometains contains a @CR|*LF
 			'+ ' & @TAB & '~ Problem: ' & $Help & _

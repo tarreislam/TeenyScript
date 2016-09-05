@@ -1,9 +1,4 @@
-
-# # # # # # TODO  buggfixar # # # #
-Kolla att @Namespace är det första som presenteras i filen (Om den finns) annars, kasta _TS_error
-
- # # # # # # # # # Todo features # # # # # # # #
-
+# # # # # # # # # Todo features # # # # # # # #
 Interfaces
 Förberedelse för nestade listor finns, verkställ dem med funktionen (Kolla RE.au3) och Lists i parser
 

@@ -36,7 +36,8 @@ Func _TS_HOTKEY_RUN()
 
 	_Scite_runFile($sAu3FileName, $sTsFileName)
 
-	If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
+
+	;If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
 EndFunc
 
 Func _TS_HOTKEY_BUILD_AU3()
@@ -82,7 +83,8 @@ Func _TS_HOTKEY_BUILD_EXE()
 		_SciTe_compileFile($sAu3FileName)
 	EndIf
 
-	If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
+	;If $_SMARTCACHE_PERFECT_CACHE Then Return ; No need to delete file since its PERFECT MF CACHE
+	;If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
 EndFunc
 
 Func _TS_HOTKEY_SET_OPT()

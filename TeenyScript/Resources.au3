@@ -25,8 +25,9 @@
 	SOFTWARE.
 #ce
 ; ~ TS related resources
+Global $_AutoitExe, $_HWND
 Global Const $_TS_AppTitle = "TeenyScript"
-Global Const $_TS_AppVer = "1.2.0";Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
+Global Const $_TS_AppVer = "2.0.0";Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
 Global Const $_TS_FullAppTitle = StringFormat("%s %s", $_TS_AppTitle, $_TS_AppVer)
 Global Const $_TS_OptFile = @ScriptDir & "\TS.opt.ini"
 Global Const $_TS_TeenyScript_DIR = @ScriptDir & "\TeenyScript"
@@ -35,6 +36,13 @@ Global Const $_TS_Project_Template_Dir = $_TS_TeenyScript_DIR & "\Templates"
 Global Const $_TS_Project_TS_Template_DIR = $_TS_Project_Template_Dir & "\TS Projects"
 ; ~ Ts Reserved variables
 Global Const $_TS_ObjectName = "this"
+
+; For compiled support
+If @Compiled Then
+	$_AutoitExe = IniRead($_TS_OptFile, "misc", "Au3Exe", Null)
+Else
+	$_AutoitExe = @AutoItExe
+EndIf
 
 ; ~ Ts misc
 Global Const $_TS_Project_Ts_PROJECT_INI = "TS.project.ini"
@@ -48,7 +56,7 @@ Global Const $_TS_Debug = ";TS_DEBUG=%s:%s:%s:%s"
 Global Enum $_TS_COMPILE_RUN, $_TS_COMPILE_BUILD_AU3, $_TS_COMPILE_BUILD_EXE
 
 ; ~ Autoit related resources
-Global Const $_AU3_EXE = @AutoItExe
+Global Const $_AU3_EXE = $_AutoitExe
 Global Const $_AU3_DIR = getFromFilepath_basedir($_AU3_EXE)
 Global Const $_AU3_AU2EXE = $_AU3_DIR & "\Aut2Exe\Aut2Exe.exe"
 Global Const $_AU3_AU2EXE_64 = $_AU3_DIR & "\Aut2Exe\Aut2Exe_x64.exe"
@@ -56,6 +64,9 @@ Global Const $_AU3_SCITE_ROAMING_DIR = @LocalAppDataDir & "\AutoIt v3\SciTE"; Fo
 Global Const $_AU3_SCITE_DIR  = $_AU3_DIR & "\SciTE"
 Global Const $_AU3_INCLUDE_DIR = $_AU3_DIR & "\Include"
 Global Const $_AU3_SCITE_EXE = $_AU3_SCITE_DIR & "\SciTE.exe"
+
+; ~ Sublime related resources
+Global Const $_SUBLIME_HWND = WinGetHandle("[CLASS:PX_WINDOW_CLASS]")
 
 ; ~ Scite related resources
 Global Const $_SCITE_TIDY = $_AU3_SCITE_DIR & "\Tidy\Tidy.exe"
@@ -84,20 +95,21 @@ Global Const $_SCITE_HotkeyCollectionIniNames = [5, "run", "build_au3", "build_e
 
 #Region Calltips
 Global Const $_SCITE_aCALLTIPS = ["@Private?3", "@Public?3", "@Readonly?3", "@Use?3", "@Namespace?3", "@MethodName?3", "@MethodParams?3", "@Extends?3", _
-"Class ($x = Func(Class....) Creates a new class)", _
-"Extension (Usage: $x = Func(Extension....) Creates an extension that can be used on a previously created Class)", _
+"Class ($x = Func(Class....) Creates a new class", _
+"Extension (Usage: $x = Func(Extension....) Creates an extension that can be used on a previously created Class", _
 "Construct (Usage: $x = Func(Construct....) May only be used inside a Class", _
+"Self (Usage: Self::$x) Will assign the variable with the current file's namespace", _
 "As (Usage: @Use ... As ....)", _
 "At (Usage: @Use ... At ....)", _
 "On (Usage: @Use ... On ....)", _
-"__Parent__ (Usage: $X.__Parent__) (Returns the parent object (If no parent exists, NULL will be returned))", _
-"__cName__ (Usage: $X.__cName__) (Returns the name of that class as a string.)", _
-"__Properties__ (Usage: $X.__Properties__) (Returns the parameters of that class as a string.)", _
-"__Namespace__ (Usage: $X.__Namespace__) (Returns the namespace of that class as a string. (If no namespace is set, an EMPTY STRING is returned))", _
-"__Methods__ (Usage: $X.__Methods__) (Returns an array of defined methods in that class. This is inteded for developers and have no particular functionality for users) (Does not include extensions)", _
-"_TS_ErrorNotify (Usage: _TS_ErrorNotify($_TS_IGNORE or $_TS_CONSOLE or $_TS_MSGBOX)) (Returns the previous option SET, default for non-comipled scripts is $_TS_CONSOLE and $_TS_MSGBOX for compiled scripts)"]
+"__Parent__ (Usage: $X.__Parent__) Returns the parent object (If no parent exists, NULL will be returned)", _
+"__cName__ (Usage: $X.__cName__) Returns the name of that class as a string.)", _
+"__Properties__ (Usage: $X.__Properties__) Returns the parameters of that class as a string.", _
+"__Namespace__ (Usage: $X.__Namespace__) Returns the namespace of that class as a string. If no namespace is set, an EMPTY STRING is returned", _
+"__Methods__ (Usage: $X.__Methods__) Returns an array of defined methods in that class. This is inteded for developers and have no particular functionality for users) (Does not include extensions", _
+"_TS_ErrorNotify (Usage: _TS_ErrorNotify($_TS_IGNORE or $_TS_CONSOLE or $_TS_MSGBOX) (Returns the previous option SET, default for non-comipled scripts is $_TS_CONSOLE and $_TS_MSGBOX for compiled scripts)"]
 
-Global Const $_SCITE_aUSER_UDFS = ["@private", "@public", "@readonly", "@use", "@namespace", "@methodname", "@methodparams", "@extends", "class", "extension", "construct", "as", "at", "on", _
+Global Const $_SCITE_aUSER_UDFS = ["@private", "@public", "@readonly", "@use", "@namespace", "@methodname", "@methodparams", "@extends", "class", "extension", "construct", "self", "as", "at", "on", _
 "__parent__", "__cname__", "__namespace__", "__Properties__", "__methods__", "_TS_ErrorNotify"]
 #EndRegion
 
@@ -143,26 +155,25 @@ Global $_resource_HotkeysEnabled = True; To prevent hotkey spam
 
 Global $_resource_sExecFile = ""; The file which is the "base-dir"
 
-; A lazy thing for showing user which file this is
-Global $_resource_curFileNameDISPLAY = "";Should only for _TS_error reports
 
 Global $_resource_clousreCount = 0; All closure counts (Global)
-Global $_resource_sFuncCount = 0; Each function count for all files
+Global $_resource_iFileId = 0; Each function count for all files
 Global $_resource_ffBuffer = ""; The whole new file
 Global $_resource_ffDebug = ""; Only the #DEBUG stuff
 Global $_resource_aNamespaces[1] = [0]
+Global $_resource_aNamespaceAlias[1] = [0]
 
 Global $_resource_bLazyLoad = False;If we are going to lazyLoad AO or not since not all scripts needs it
 
 
 Func _TS_ResetResources()
-	$_resource_curFileNameDISPLAY = ""
 	$_resource_sExecFile = "";
 	$_resource_clousreCount = 0
-	$_resource_sFuncCount = 0
+	$_resource_iFileId = 0
 	$_resource_ffBuffer = ""
 	$_resource_ffDebug = ""
-	_Array_Empty($_resource_aNamespaces); mby not needed either!? mby only ClosureCount and FFbuffer needed
+	_Array_Empty($_resource_aNamespaces)
+	_Array_Empty($_resource_aNamespaceAlias)
 	$_resource_bLazyLoad = False
 EndFunc
 
@@ -239,13 +250,14 @@ EndFunc
 
 
 Func _TS_Init()
+	 _TS_Config()
 	Sleep(500)
 	_Scite_SendMessage() ; Clear Output pane "IDM_CLEAROUTPUT"
 	$ConsoleWrite(" _____                 _____         _     _   ", "o")
 	$ConsoleWrite("|_   _|___ ___ ___ _ _|   __|___ ___|_|___| |_ ", "o")
   	$ConsoleWrite("  | | | -_| -_|   | | |__   |  _|  _| | . |  _| ", "o")
   	$ConsoleWrite("  |_| |___|___|_|_|_  |_____|___|_| |_|  _|_|   ", "o")
-    $ConsoleWrite(STR_PAD("By TarreTarreTarre", $STR_PAD_RIGHT, 18) & "|___|"&STR_PAD(StringFormat("Build '%s'",$_TS_AppVer),$STR_PAD_LEFT, 15, " ")&"|_|       ", "o")
+    $ConsoleWrite(STR_PAD("By TarreTarreTarre", $STR_PAD_RIGHT, 18) & "|___|"&STR_PAD(StringFormat(" Build '%s'",$_TS_AppVer), $STR_PAD_RIGHT, 15, " ")&"|_|       ", "o")
 
 	; Set keybinds and display their usage
 	For $i = 1 to $_SCITE_HotkeyCollectionKeys[0]
@@ -264,16 +276,16 @@ EndFunc
 Func _TS_ADLIB()
 	;Disable HotkeyMgr when not inside scite...
 	Local $awh = WinGetHandle("[ACTIVE]")
-	If $_SCITE_HWND <> $awh And $_resource_HotkeysEnabled Then
+	If $_HWND <> $awh And $_resource_HotkeysEnabled Then
 		$_resource_HotkeysEnabled = False
 		_TS_HotkeyManager(False)
-	ElseIf $_SCITE_HWND == $awh And Not $_resource_HotkeysEnabled Then
+	ElseIf $_HWND == $awh And Not $_resource_HotkeysEnabled Then
 		$_resource_HotkeysEnabled = True
 		_TS_HotkeyManager(True)
 	EndIf
 	;Else do nothing. no need to spam
 
-	if Not IsHWnd($_SCITE_HWND) Then
+	if Not IsHWnd($_HWND) Then
 		AdlibUnRegister("_TS_ADLIB"); Prevents multiple popup boxes
 		MsgBox($MB_ICONINFORMATION, $_TS_FullAppTitle, StringFormat("%s closed because the SciTe window was closed.", $_TS_AppTitle), 5)
 		Exit
@@ -283,5 +295,63 @@ EndFunc
 Func _TS_Exit_Auto()
 	_Scite_SendMessage() ; Clear Output pane "IDM_CLEAROUTPUT"
 	$ConsoleWrite("%s closed unexpected @ %s:%s:%s", "r", $_TS_AppTitle, @HOUR, @MIN, @SEC)
+EndFunc
+
+Func _TS_Config()
+	If @Compiled Then
+		If not FileExists($_AutoitExe) Then
+			Do
+				MsgBox($MB_ICONWARNING, $_TS_FullAppTitle, StringFormat("Cannot run %s compiled since TS.opt.ini does not have a valid [Misc].Au3Exe value. please select Autoit3.exe", $_TS_AppTitle))
+				$_AutoitExe = FileOpenDialog ($_TS_AppTitle, @ProgramFilesDir, "AutoIt3.exe(AutoIt3.exe)",  $FD_FILEMUSTEXIST + $FD_PATHMUSTEXIST)
+				If @error Then
+					_TS_AbortedByUser()
+					Exit
+				EndIf
+			Until FileExists($_AutoitExe)
+			IniWrite($_TS_OptFile, "misc", "Au3Exe", $_AutoitExe)
+			; ~ Restart TeenyScript after changes has been done
+			Run(@AutoItExe)
+			Exit
+		EndIf
+		; Check if we have 2 handles active, then the user has to chooose
+		Local $ok = False
+		If BitAND($_SCITE_HWND, $_SUBLIME_HWND) Then
+			Do
+				$InputBox = InputBox($_TS_AppTitle, "It seems like you have both Sublime & Scite running, please choose one by typing either 'scite' or 'sublime'", "sublime")
+				Switch $InputBox
+					Case 'sublime'
+						$_HWND = $_SUBLIME_HWND
+						$ok = True
+					Case 'scite'
+						$_HWND = $_SCITE_HWND
+						$ok = True
+					Case ''
+						If @error Then
+							_TS_AbortedByUser()
+							Exit
+						EndIf
+					Case Else
+						MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Unkown option '%s' please try again", $InputBox))
+				EndSwitch
+			Until $ok
+		ElseIf IsHWnd($_SCITE_HWND) Then
+			$_HWND = $_SCITE_HWND
+		ElseIf IsHWnd($_SUBLIME_HWND) Then
+			$_HWND = $_SUBLIME_HWND
+		EndIf
+	Else
+		If Not $_SCITE_HWND Then
+			MsgBox($MB_ICONERROR, $_TS_FullAppTitle, StringFormat("Could not find the SciTe window handle. Make sure you are running %s in SciTe.", $_TS_AppTitle))
+			Exit
+		Else
+			$_HWND = $_SCITE_HWND
+		EndIf
+	EndIf
+	If Not FileExists($_AU3_AU2EXE) Then
+		MsgBox($MB_ICONWARNING, $_TS_FullAppTitle, StringFormat("The file '%s' was not found, this will prevent you from compiling the script to .exe", $_AU3_AU2EXE))
+	EndIf
+	If Not FileExists($_SCITE_TIDY) Then
+		MsgBox($MB_ICONWARNING, $_TS_FullAppTitle, StringFormat("The file '%s' was not found, this will prevent you from using SciTE Tidy-up.", $_SCITE_TIDY))
+	EndIf
 EndFunc
 

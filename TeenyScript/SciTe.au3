@@ -30,8 +30,9 @@ Func _Scite_OpenFile($sFilepath)
 	RunWait(StringFormat('%s "%s"', $_AU3_SCITE_EXE, StringReplace($sFilepath, "\", "\\")))
 EndFunc
 
-Func _SciTe_getOpenFileName()
-	Return StringRegExpReplace(WinGetTitle($_SCITE_HWND), $re_SciTE_TSpath, "")
+Func _SciTe_getOpenFileName(); bein lazy feels good sometimes
+	If $_HWND == $_SUBLIME_HWND Then Return StringRegExpReplace(WinGetTitle($_HWND), $re_Sublime_TSpath, "")
+	Return StringRegExpReplace(WinGetTitle($_HWND), $re_SciTE_TSpath, "")
 EndFunc   ;==>_SciTe_getOpenFileName
 
 Func _SciTe_runFile($sInputFile, $sDisplayFile)
