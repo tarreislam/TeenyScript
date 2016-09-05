@@ -82,7 +82,7 @@ Func _TS_Project_VCS_DisplayErr(ByRef $oProject, $sText, $hParent = 0, $iCode = 
 	Return SetError($iCode, 0, 0)
 EndFunc
 
-Func _TS_Project_createNewproject($oProject, $sNewProjectTargetDir, $hParent = 0)
+Func _TS_Project_createNewproject(ByRef $oProject, $sNewProjectTargetDir, $hParent = 0)
 	If Not FileExists($sNewProjectTargetDir) Then
 		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Unable to find folder '%s'", $sNewProjectTargetDir), 0, $hParent)
 		Return SetError(1, 0, 0)
@@ -104,7 +104,7 @@ Func _TS_Project_createNewproject($oProject, $sNewProjectTargetDir, $hParent = 0
 	Sleep(250)
 
 	; Remove write protection
-	If Not FileSetAttrib($oProject.dir, "-R", $FT_RECURSIVE) Then
+	If Not _RemoveWriteProtection($oProject.dir, $FT_RECURSIVE) Then
 		MsgBox($MB_ICONWARNING, $_TS_AppTitle, StringFormat("Failed to remove write protection on '%s'", $oProject.dir), 0, $hParent)
 		Return SetError(4, 0, 0)
 	EndIf

@@ -26,15 +26,17 @@
 #ce
 Func _TS_HOTKEY_RUN()
 
-	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName, [2] = $oProject
+	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] $sAu3Filename_tmp, [2] = $sTsFileName, [3] = $oProject
 	If Not IsArray($aFile) Then Return False
 	Local Const $sAu3FileName = $aFile[0]
-	Local Const $sTsFileName = $aFile[1]
-	Local Const $oProject = $aFile[2]
+	Local Const $sAu3Filename_tmp = $aFile[1]
+	Local Const $sTsFileName = $aFile[2]
+	Local Const $oProject = $aFile[3]
 
 	If IsObj($oProject) Then _TS_Project_VCS($oProject)
 
-	_Scite_runFile($sAu3FileName, $sTsFileName)
+	; display da file
+	_Scite_runFile($sAu3Filename_tmp, $sTsFileName)
 
 
 	;If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
@@ -42,24 +44,32 @@ EndFunc
 
 Func _TS_HOTKEY_BUILD_AU3()
 
-	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName, [2] = $oProject
+	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] $sAu3Filename_tmp, [2] = $sTsFileName, [3] = $oProject
 	If Not IsArray($aFile) Then Return False
 	Local Const $sAu3FileName = $aFile[0]
-	Local Const $sTsFileName = $aFile[1]
-	Local Const $oProject = $aFile[2]
+	Local Const $sAu3Filename_tmp = $aFile[1]
+	Local Const $sTsFileName = $aFile[2]
+	Local Const $oProject = $aFile[3]
 
 	If IsObj($oProject) Then _TS_Project_VCS($oProject); Run Version Control System
-
+	; Copy the file we parsed from the tmp dir
+	FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
 	$ConsoleWrite("Conversion from '%s' -> '%s' was successful!", "g", $sTsFileName, $sAu3FileName)
+
 EndFunc
 
 Func _TS_HOTKEY_BUILD_EXE()
 
-	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] = $sTsFileName, [2] = $oProject
+	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] $sAu3Filename_tmp, [2] = $sTsFileName, [3] = $oProject
 	If Not IsArray($aFile) Then Return False
 	Local Const $sAu3FileName = $aFile[0]
-	Local Const $sTsFileName = $aFile[1]
-	Local Const $oProject = $aFile[2]
+	Local Const $sAu3Filename_tmp = $aFile[1]
+	Local Const $sTsFileName = $aFile[2]
+	Local Const $oProject = $aFile[3]
+
+	; Copy file and parse then delete
+	FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
+
 
 	If IsObj($oProject) Then
 		$ConsoleWrite("Found %s, compiling with options", "g", $_TS_Project_Ts_PROJECT_INI)
@@ -83,8 +93,7 @@ Func _TS_HOTKEY_BUILD_EXE()
 		_SciTe_compileFile($sAu3FileName)
 	EndIf
 
-	;If $_SMARTCACHE_PERFECT_CACHE Then Return ; No need to delete file since its PERFECT MF CACHE
-	;If Not FileDelete($sAu3FileName) Then MsgBox($MB_ICONERROR, $_TS_AppTitle, StringFormat("Failed to remove the file '%s', it may be used by some other process?", $sAu3FileName))
+	FileDelete($sAu3FileName)
 EndFunc
 
 Func _TS_HOTKEY_SET_OPT()

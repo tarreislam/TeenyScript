@@ -61,22 +61,22 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 	Local $getFromFilepath_basedir = $aFileInfo[0]
 	$aFileInfo[1] = StringRegExpReplace($aFileInfo[1], "(.*)\.ts", "$1")
 
-	; ~ New file name c:\x\x.ts -> c:\x\x.au3 (Actual file)
-	Local Const $sAu3FileName = StringFormat("%s\%s.au3", $getFromFilepath_basedir, $aFileInfo[1])
+	; ~ New file name c:\x\x.ts -> c:\x\x.au3 (Actual file) (If we need to open dir)
+	Local Const $sAu3FileName = StringFormat("%s\%s.au3", $getFromFilepath_basedir, $aFileInfo[1]); The destination of the file when we are compiling to .au3
+	Local Const $sAu3FileName_TMP = StringFormat("%s\%s.au3", @TempDir, $aFileInfo[1]); The file used when we are running and using cache
 	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
 	Local $oProject = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir)
 
 	; if not perfect cache
+	MsgBox(0, "Perfect cache?", $_SMARTCACHE_PERFECT_CACHE)
 	If Not $_SMARTCACHE_PERFECT_CACHE Then
 		_TS_Namespace_GetAll($_resource_sExecFile); Get all namespaces
 		Local Const $aNew_ts_2_au3_File = _TS_ParseFile($sFileName, $sFileName);Returns [0] = Full file path, [1] = Parsed content of file(s)
 		If _TS_Error() Then Return False; This is nuff
 		; Create the new file (If not on full cache spree)
 
-		; Remove hide
-		FileSetAttrib($sAu3FileName, "-H"); Hide instead of delete
-		Local const $fHandle = FileOpen($sAu3FileName, $FO_OVERWRITE)
-		if $fHandle == -1 Then Return _TS_SetError(4, 0, 0, "Failed to open '%s' for '$FO_OVERWRITE'", $sAu3FileName); Failed to open filehandle with Append \overwrite
+		Local const $fHandle = FileOpen($sAu3FileName_TMP, $FO_OVERWRITE)
+		if $fHandle == -1 Then Return _TS_SetError(4, 0, 0, "Failed to open '%s' for '$FO_OVERWRITE'", $sAu3FileName_TMP); Failed to open filehandle with Append \overwrite
 		; Append Opt options
 		; if $opt....
 		; Append LazyLoded content if we are using AO
@@ -86,12 +86,9 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 		FileWrite($fHandle, $_resource_ffBuffer);
 		FileWriteLine($fHandle, $_resource_ffDebug); Write the DEBUG data (ONLY on RUN)
 		FileClose($fHandle)
-		FileSetAttrib($sAu3FileName, "+H"); Hide instead of delete
 	EndIf
 
-
-	Local $aRet = [$sAu3FileName, $sFileName, $oProject]
-
+	Local $aRet = [$sAu3FileName, $sAu3FileName_TMP, $sFileName, $oProject]
 	Return $aRet
 EndFunc
 

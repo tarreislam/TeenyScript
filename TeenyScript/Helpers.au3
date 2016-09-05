@@ -138,6 +138,16 @@ Func getRandomString($len, $fill = False)
 	Return $ret
 EndFunc   ;==>rString
 
+; Forcing of set Attrib
+Func _RemoveWriteProtection($sFileName, $RECURSE = $FT_NONRECURSIVE)
+	Local $timeout = TimerInit(), $r
+	Do
+		FileSetAttrib($sFileName, "-R", $RECURSE)
+		$r = StringRegExp(FileGetAttrib($sFileName), "R")
+	Until Not $r Or TimerDiff($timeout) > 500
+
+	Return Not $r
+EndFunc
 
 Func STR_PAD($str, $direction = $STR_PAD_RIGHT, $MaxWidth = 47, $fill = "#")
 	$str = StringSplit($str, "")
