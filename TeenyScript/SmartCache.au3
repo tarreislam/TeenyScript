@@ -29,7 +29,7 @@
 #include <FileConstants.au3>
 
 ;sFilePath, dateChanged, sFileData
-Global $_SMARTCACHE_RESOURCE = [[0]], $_SMARTCACHE_FILE_STATE = Null, $_SMARTCACHE_FILE_ID = Null, $_SMARTCACHE_PERFECT_CACHE = False
+Global $_SMARTCACHE_RESOURCE = [[0]], $_SMARTCACHE_FILE_STATE = Null, $_SMARTCACHE_FILE_ID = Null, $_SMARTCACHE_PERFECT_CACHE = Null
 Global Enum $_SMARTCACHE_FILE_NOT_CACHED, $_SMARTCACHE_FILE_MODIFIED, $_SMARTCACHE_FILE_CACHED, $_SMARTCACHE_FILE_DELETED
 
 
@@ -66,22 +66,9 @@ Func _SmartCache_update(ByRef $sFilePath, ByRef $sData, ByRef $bLazyLoad)
 	$_SMARTCACHE_FILE_ID = Null
 EndFunc
 
-Func _SmartCache_hasPerfectCache(ByRef $sFilePath, ByRef $sBaseDir); The file bein parsed has also be in the cluster
-	Local $hits = 0, $scope_hits = 0
-
-	For $i = 1 To $_SMARTCACHE_RESOURCE[0][0]
-		; Parse files only in our scope scope_total has to be the same as HITS for this to work
-
-		Local $sCurFile = $_SMARTCACHE_RESOURCE[$i][0]
-		if StringInStr($sCurFile, $sBaseDir) Then
-			$scope_hits+=1
-			If $_SMARTCACHE_RESOURCE[$i][1] == FileGetTime($sCurFile, $FT_MODIFIED, $FT_STRING) Then $hits+=1; perfect hit
-		EndIf
-
-	Next
-
-	$_SMARTCACHE_PERFECT_CACHE = $scope_hits == $hits And $scope_hits > 0
-	Return $_SMARTCACHE_PERFECT_CACHE
+Func _SmartCache_init()
+	; We always assume its a perfect world
+	$_SMARTCACHE_PERFECT_CACHE = TRUE
 EndFunc
 ; Delete
 Func _SmartCache_remove()
@@ -97,6 +84,7 @@ EndFunc
 Func _SmartCache_getFileStatus(ByRef $sFilePath)
 	if not FileExists($sFilePath) Then
 		$_SMARTCACHE_FILE_STATE = $_SMARTCACHE_FILE_DELETED
+		$_SMARTCACHE_PERFECT_CACHE = False
 		Return False
 	EndIf
 	Local $lazyLoadDream = False; prevent on\off toggle
@@ -108,6 +96,7 @@ Func _SmartCache_getFileStatus(ByRef $sFilePath)
 
 			If FileGetTime($sFilePath, $FT_MODIFIED, $FT_STRING) <> $_SMARTCACHE_RESOURCE[$i][1] Then
 				$_SMARTCACHE_FILE_STATE = $_SMARTCACHE_FILE_MODIFIED
+				$_SMARTCACHE_PERFECT_CACHE = False
 				Return True
 			Else
 				$_SMARTCACHE_FILE_STATE = $_SMARTCACHE_FILE_CACHED
@@ -116,6 +105,7 @@ Func _SmartCache_getFileStatus(ByRef $sFilePath)
 		EndIf
 	Next
 	$_SMARTCACHE_FILE_STATE = $_SMARTCACHE_FILE_NOT_CACHED
+	$_SMARTCACHE_PERFECT_CACHE = False
 	Return False
 EndFunc
 

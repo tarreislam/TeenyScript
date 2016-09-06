@@ -153,7 +153,7 @@ Global $_resource_TS_aErrors[1] = [0]
 Global $_resource_CmdLine = IniRead($_TS_OptFile, "misc", "CmdLine", "")
 Global $_resource_HotkeysEnabled = True; To prevent hotkey spam
 
-Global $_resource_sExecFile = ""; The file which is the "base-dir"
+Global $_resource_exec_sFilename_baseDir = ""; The file which is the "base-dir"
 
 
 Global $_resource_clousreCount = 0; All closure counts (Global)
@@ -167,7 +167,7 @@ Global $_resource_bLazyLoad = False;If we are going to lazyLoad AO or not since 
 
 
 Func _TS_ResetResources()
-	$_resource_sExecFile = "";
+	$_resource_exec_sFilename_baseDir = "";
 	$_resource_clousreCount = 0
 	$_resource_iFileId = 0
 	$_resource_ffBuffer = ""

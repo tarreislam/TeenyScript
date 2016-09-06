@@ -53,8 +53,11 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 	; check if we have PURFECT data
 
 	; This is our execution dir
-	$_resource_sExecFile = getFromFilepath_basedir($sFileName)
-	_SmartCache_hasPerfectCache($sFileName, $_resource_sExecFile)
+	$_resource_exec_sFilename_baseDir = getFromFilepath_basedir($sFileName)
+
+	_SmartCache_init()
+	_TS_Namespace_GetAll($_resource_exec_sFilename_baseDir); Get all namespaces
+	_TS_ParseFile($sFileName, $sFileName)
 
 	; Load ness info
 	Local $aFileInfo = getFromFilepath_all_asArray($sFileName); C:\x\x\x.ts.au3
@@ -69,8 +72,6 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 
 	; if not perfect cache
 	If Not $_SMARTCACHE_PERFECT_CACHE Then
-		_TS_Namespace_GetAll($_resource_sExecFile); Get all namespaces
-		Local Const $aNew_ts_2_au3_File = _TS_ParseFile($sFileName, $sFileName);Returns [0] = Full file path, [1] = Parsed content of file(s)
 		If _TS_Error() Then Return False; This is nuff
 		; Create the new file (If not on full cache spree)
 
@@ -201,7 +202,7 @@ Func _TS_Compose_Include_Rec(Const $sCurrentFileBuffer, ByRef $sFileName, $sPrev
 								Case "\"
 									$aRe_TS_CurFile_TS = StringFormat("%s\%s.au3", getFromFilepath_basedir($sFileName_relative_path), $aRe_TS_CurFile)
 								Case "\\"
-									$aRe_TS_CurFile_TS = StringFormat("%s\%s.au3", $_resource_sExecFile, $aRe_TS_CurFile)
+									$aRe_TS_CurFile_TS = StringFormat("%s\%s.au3", $_resource_exec_sFilename_baseDir, $aRe_TS_CurFile)
 							EndSwitch
 						Else
 							$aRe_TS_CurFile_TS = StringFormat("%s\%s.au3", $sFileName_relative_path, $aRe_TS_CurFile)
@@ -232,7 +233,7 @@ Func _TS_Compose_Include_Rec(Const $sCurrentFileBuffer, ByRef $sFileName, $sPrev
 										$_FileListToArrayRec_sPath = getFromFilepath_basedir($sFileName_relative_path) & getFromFilepath_basedir($aRe_TS_CurFile)
 
 									Case "\\"; Go to exec dir
-										$_FileListToArrayRec_sPath = $_resource_sExecFile & StringTrimLeft(getFromFilepath_basedir($aRe_TS_CurFile), 1)
+										$_FileListToArrayRec_sPath = $_resource_exec_sFilename_baseDir & StringTrimLeft(getFromFilepath_basedir($aRe_TS_CurFile), 1)
 								EndSwitch
 							Else
 								$_FileListToArrayRec_sPath = StringFormat("%s\%s", $sFileName_relative_path, getFromFilepath_basedir($aRe_TS_CurFile))

@@ -1,6 +1,3 @@
-# # # # # # # # # Todo BUGGFIXA # # # # # # # #
-Gör så Sci_TE run körs från TMP och fyltta endast filen VID Compile to AU3, och kör en FILEOPEN på den med 2.0.1*
-
 # # # # # # # # # Todo features 2.1.* # # # # # # # #
 Interfaces
 Förberedelse för nestade listor finns, verkställ dem med funktionen (Kolla RE.au3) och Lists i parser
