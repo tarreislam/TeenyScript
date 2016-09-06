@@ -46,18 +46,22 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 	If Not StringRegExp($sFileName, $re_TS_fileExt) Then Return _TS_SetError(1, 0, 0, "'%s' does not qualify with the %s file extension '.ts.au3'", $sFileName, $_TS_AppTitle); Not a valid Ts.au3 extension (Or not saved)
 	If Not FileExists($sFileName) Then Return _TS_SetError(2, 0, 0, "The file '%s' does not exist", $sFileName); File does not exist
 
-	; Reset resources
+	; Reset global resources
 	_TS_ResetResources()
-
-	; Get the TS > Au3 converted data
-	; check if we have PURFECT data
 
 	; This is our execution dir
 	$_resource_exec_sFilename_baseDir = getFromFilepath_basedir($sFileName)
 
+		; Do features ~
+	; Init smartCache
 	_SmartCache_init()
-	_TS_Namespace_GetAll($_resource_exec_sFilename_baseDir); Get all namespaces
-	_TS_ParseFile($sFileName, $sFileName)
+
+	; Retrive all namespaces in that directory, (Even if not included as file)
+	_TS_Namespace_GetAll($_resource_exec_sFilename_baseDir)
+
+	; Parse the file
+	Local $sBuffer = ""; Where the new parsed data will be held
+	_TS_ParseFile($sFileName, $sBuffer, $sFileName)
 
 	; Load ness info
 	Local $aFileInfo = getFromFilepath_all_asArray($sFileName); C:\x\x\x.ts.au3
@@ -83,7 +87,7 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 		If $_resource_bLazyLoad Then
 			FileWrite($fHandle, $_TS_LazyLoadedContent)
 		EndIf
-		FileWrite($fHandle, $_resource_ffBuffer);
+		FileWrite($fHandle, $sBuffer);
 		FileWriteLine($fHandle, $_resource_ffDebug); Write the DEBUG data (ONLY on RUN)
 		FileClose($fHandle)
 	EndIf
@@ -93,7 +97,7 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 EndFunc
 
 ;$sPrevFileName is so we can get the relative path for includes working correctly
-Func _TS_ParseFile(ByRef $sFileName, $sPrevFileName = False)
+Func _TS_ParseFile(ByRef $sFileName, ByRef $sBuffer, $sPrevFileName = False)
 
 	$sCurrentFileBuffer = FileRead($sFileName)
 
@@ -111,7 +115,7 @@ Func _TS_ParseFile(ByRef $sFileName, $sPrevFileName = False)
 	EndIf
 
 	; Look for #includes before continuing parsing
-	_TS_Compose_Include_Rec($sCurrentFileBuffer, $sFileName, $sPrevFilename, $sCurFileBuffer)
+	_TS_Compose_Include_Rec($sCurrentFileBuffer, $sFileName, $sPrevFilename, $sCurFileBuffer, $sBuffer)
 
 	; Use smartcache, to set\get file content to memory
 	_SmartCache_getFileStatus($sFileName)
@@ -147,7 +151,7 @@ Func _TS_ParseFile(ByRef $sFileName, $sPrevFileName = False)
 	EndSwitch
 
 	; Save complete file
-	$_resource_ffBuffer &= $sCurFileBuffer
+	$sBuffer &= $sCurFileBuffer
 	$sCurFileBuffer = ""; reset for the current file
 
 	; Update lazyload when file is complete
@@ -157,7 +161,7 @@ Func _TS_ParseFile(ByRef $sFileName, $sPrevFileName = False)
 EndFunc
 
 ; For recursive parsing with (#include x)
-Func _TS_Compose_Include_Rec(Const $sCurrentFileBuffer, ByRef $sFileName, $sPrevFileName, ByRef $sCurFileBuffer)
+Func _TS_Compose_Include_Rec(Const $sCurrentFileBuffer, ByRef $sFileName, $sPrevFileName, ByRef $sCurFileBuffer, ByRef $sBuffer)
 	Local $aRe_TS_Include = StringRegExp($sCurrentFileBuffer, $re_TS_Include, 3)
 
 		if IsArray($aRe_TS_Include) Then
@@ -217,7 +221,7 @@ Func _TS_Compose_Include_Rec(Const $sCurrentFileBuffer, ByRef $sFileName, $sPrev
 
 						; Parse the file. Will always use the parent relative path. (Yeah, it will support include of include etc
 						If Not FileExists($aRe_TS_CurFile_TS) Then Return _TS_SetError(3, 0, 0, "The %s file '%s' was not found", $_TS_AppTitle, $aRe_TS_CurFile_TS)
-						_TS_ParseFile($aRe_TS_CurFile_TS, $sFileName); Passing the current as "Previous"
+						_TS_ParseFile($aRe_TS_CurFile_TS, $sBuffer, $sFileName); Passing the current as "Previous"
 						If _TS_Error() Then Return _TS_SetError(4, 0, 0, "(Recursive) Unable to parse the file '%s'", $aRe_TS_CurFile_TS)
 					Case Else
 						If $aRe_TS_CurExt == '*.ts' Or $aRe_TS_CurExt == '**.ts' Then

@@ -75,7 +75,6 @@ Func _SmartCache_remove()
 	If $_SMARTCACHE_FILE_ID Then
 		$_SMARTCACHE_RESOURCE[0][0]-=1
 		_ArrayDelete($_SMARTCACHE_RESOURCE, $_SMARTCACHE_FILE_ID)
-		; Reset state
 		$_SMARTCACHE_FILE_STATE = Null
 		$_SMARTCACHE_FILE_ID = Null
 	EndIf
@@ -89,11 +88,8 @@ Func _SmartCache_getFileStatus(ByRef $sFilePath)
 	EndIf
 	Local $lazyLoadDream = False; prevent on\off toggle
 	For $i = 1 To $_SMARTCACHE_RESOURCE[0][0]
-
 		If $_SMARTCACHE_RESOURCE[$i][0] == $sFilePath Then
-
-			$_SMARTCACHE_FILE_ID = $i; Save id
-
+			$_SMARTCACHE_FILE_ID = $i
 			If FileGetTime($sFilePath, $FT_MODIFIED, $FT_STRING) <> $_SMARTCACHE_RESOURCE[$i][1] Then
 				$_SMARTCACHE_FILE_STATE = $_SMARTCACHE_FILE_MODIFIED
 				$_SMARTCACHE_PERFECT_CACHE = False

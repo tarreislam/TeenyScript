@@ -158,7 +158,6 @@ Global $_resource_exec_sFilename_baseDir = ""; The file which is the "base-dir"
 
 Global $_resource_clousreCount = 0; All closure counts (Global)
 Global $_resource_iFileId = 0; Each function count for all files
-Global $_resource_ffBuffer = ""; The whole new file
 Global $_resource_ffDebug = ""; Only the #DEBUG stuff
 Global $_resource_aNamespaces[1] = [0]
 Global $_resource_aNamespaceAlias[1] = [0]
@@ -170,7 +169,6 @@ Func _TS_ResetResources()
 	$_resource_exec_sFilename_baseDir = "";
 	$_resource_clousreCount = 0
 	$_resource_iFileId = 0
-	$_resource_ffBuffer = ""
 	$_resource_ffDebug = ""
 	_Array_Empty($_resource_aNamespaces)
 	_Array_Empty($_resource_aNamespaceAlias)
