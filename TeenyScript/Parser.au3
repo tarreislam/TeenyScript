@@ -120,17 +120,22 @@ Func _TS_ParseFile(ByRef $sFileName, ByRef $sBuffer, $sPrevFileName = False)
 	; Use smartcache, to set\get file content to memory
 	_SmartCache_getFileStatus($sFileName)
 
+	; Where we store global variables (including namespace)
+	Local $sGlobalProps = ""
+
 	Switch $_SMARTCACHE_FILE_STATE
 		Case $_SMARTCACHE_FILE_NOT_CACHED, $_SMARTCACHE_FILE_MODIFIED
 
 			; Remove comment blocks #cs #ce
 			$sCurrentFileBuffer = StringRegExpReplace($sCurrentFileBuffer, $re_Comment_Block, "")
 
-			; Regular namespace (Dont save to global)
+			; Regular namespace (Dosent save to global)
 			Local $oNamespace = _TS_File_Namespace_get($sCurrentFileBuffer, $sFileName, False); This will run for EVERY file
 			; Alias namespaces
 			Local $aAliasNamespaces  = _TS_Func_getNamespaceAlias($sCurrentFileBuffer); new (Should be unique for each file) ; This will run for EVERY file
 
+			; Parse regular Globals, including namespaces
+			_TS_GlobalVariable_Parse($sGlobalProps, $sCurrentFileBuffer, $oNamespace)
 
 			If _TS_Error() Then Return
 
@@ -150,8 +155,8 @@ Func _TS_ParseFile(ByRef $sFileName, ByRef $sBuffer, $sPrevFileName = False)
 		_SmartCache_getCachedData($sCurFileBuffer)
 	EndSwitch
 
-	; Save complete file
-	$sBuffer &= $sCurFileBuffer
+	; Save global props and content
+	$sBuffer &= $sGlobalProps & @CRLF & $sCurFileBuffer
 	$sCurFileBuffer = ""; reset for the current file
 
 	; Update lazyload when file is complete
@@ -259,7 +264,7 @@ Func _TS_Compose_Include_Rec(Const $sCurrentFileBuffer, ByRef $sFileName, $sPrev
 
 									;If current file is the same as the previous then an endless loop has happend
 									if $_FileListToArrayRec[$j] == $sPrevFileName Then Return _TS_SetError(7, 0 ,0, "_FileListToArrayRec Endless loop detected '%s' == '%s', aborting...", $_FileListToArrayRec[$j], $sPrevFileName)
-									_TS_ParseFile($_FileListToArrayRec[$j], $sFileName)
+									_TS_ParseFile($_FileListToArrayRec[$j], $sBuffer, $sFileName)
 									If _TS_Error() Then ExitLoop
 								Next
 							EndIf
@@ -481,6 +486,23 @@ Func _TS_Compose_Lists_MultiAssignByContent(ByRef $oCur, ByRef $name, ByRef $con
 	Return $sListBuffer
 EndFunc
 #EndRegion _TS_Compose_Lists_*
+
+#EndRegion
+
+
+#Region Global
+Func _TS_GlobalVariable_Parse(ByRef $sGlobalProps, ByRef $sCurrentFileBuffer, ByRef $oNamespace)
+	Local $aRe_variable_global = StringRegExp($sCurrentFileBuffer, $re_variable_global_assignments, 3)
+	For $i = 0 To UBound($aRe_variable_global) -1 Step +2
+		$sGlobalProps &= StringFormat("Global %s %s", $aRe_variable_global[$i], $aRe_variable_global[$i + 1]) & @CRLF
+	Next
+	; Finalize with namespaces
+	_TS_GlobalVariable_parseVariable($sGlobalProps, $oNamespace)
+EndFunc
+
+Func _TS_GlobalVariable_parseVariable(ByRef $sGlobalProps, ByRef $oNamespace)
+	$sGlobalProps = StringRegExpReplace($sGlobalProps, $re_variable_global_variables, StringFormat("$%s$1", $oNamespace.clean))
+EndFunc
 
 #EndRegion
 

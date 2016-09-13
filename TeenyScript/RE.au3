@@ -47,6 +47,12 @@ Global Const $re_func_properties = "(?i)(?:@|)(private|public|readonly)\h*\$" & 
 ;Global Const $re_func_interface = "(?i)\$([a-z]+)\h*=\h*Func\(([^)]+)\)"; Interface detection
 
 ;  ---------------------------------------------------------
+; |					Misc variables 							|
+; |				Variable related stuff						|
+;  ---------------------------------------------------------
+Global Const $re_variable_global_assignments = "(?i)Global\h(const|enum|)([^\n]+)"; Grab Global variables, only consts, enum or nothing
+Global Const $re_variable_global_variables = "(?i)\$(" & $re_AcceptedVarName & ")"; The actual names
+;  ---------------------------------------------------------
 ; |							Array 							|
 ; |					Array related easers					|
 ;  ---------------------------------------------------------
