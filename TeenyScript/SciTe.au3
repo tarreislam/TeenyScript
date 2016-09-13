@@ -25,6 +25,12 @@
 	SOFTWARE.
 #ce
 #include-once
+Global $_Scite_DeleteThisFile = ""
+
+Func _Scite_Adlib_Delete()
+	If FileExists($_Scite_DeleteThisFile) Then FileDelete($_Scite_DeleteThisFile)
+	AdlibUnRegister("_Scite_Adlib_Delete")
+EndFunc
 
 Func _Scite_OpenFile($sFilepath)
 	RunWait(StringFormat('%s "%s"', $_AU3_SCITE_EXE, StringReplace($sFilepath, "\", "\\")))
@@ -35,8 +41,10 @@ Func _SciTe_getOpenFileName(); bein lazy feels good sometimes
 	Return StringRegExpReplace(WinGetTitle($_HWND), $re_SciTE_TSpath, "")
 EndFunc   ;==>_SciTe_getOpenFileName
 
-Func _SciTe_runFile($sInputFile, $sDisplayFile)
+Func _SciTe_runFile($sInputFile, $sDisplayFile, $delete_at_runtime = False)
 	Local Const $timer = _SciTe_SexyTimePassedRauR_START("Running '%s' %s", $sDisplayFile, (isEmpty($_resource_CmdLine) ? 'without params' : 'with params: '& $_resource_CmdLine))
+	$_Scite_DeleteThisFile = $sInputFile
+	If $delete_at_runtime Then AdlibRegister("_Scite_Adlib_Delete", 1500)
 	RunWait(StringFormat('%s "%s" %s', $_AU3_EXE, $sInputFile, $_resource_CmdLine), "", Default, $STDIN_CHILD)
 	_SciTe_SexyTimePassedRauR($timer)
 EndFunc   ;==>_SciTe_runFile

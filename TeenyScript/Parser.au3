@@ -74,13 +74,15 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 	Local Const $_TS_ProjectFile = StringFormat($_TS_Project_FilePatt, $getFromFilepath_basedir)
 	Local $oProject = _TS_Project_getSettings($_TS_ProjectFile, $getFromFilepath_basedir)
 
-	; if not perfect cache
-	If Not $_SMARTCACHE_PERFECT_CACHE Then
+	; if not perfect cache, I will disable this, cus it causes more harm than good for now, this makes me wanna quit life
+	;If Not $_SMARTCACHE_PERFECT_CACHE Then
 		If _TS_Error() Then Return False; This is nuff
 		; Create the new file (If not on full cache spree)
 
-		Local const $fHandle = FileOpen($sAu3FileName_TMP, $FO_OVERWRITE)
-		if $fHandle == -1 Then Return _TS_SetError(4, 0, 0, "Failed to open '%s' for '$FO_OVERWRITE'", $sAu3FileName_TMP); Failed to open filehandle with Append \overwrite
+		;Local const $fHandle = FileOpen($sAu3FileName_TMP, $FO_OVERWRITE)
+		Local const $fHandle = FileOpen($sAu3FileName, $FO_OVERWRITE)
+		;if $fHandle == -1 Then Return _TS_SetError(4, 0, 0, "Failed to open '%s' for '$FO_OVERWRITE'", $sAu3FileName_TMP); Failed to open filehandle with Append \overwrite
+		if $fHandle == -1 Then Return _TS_SetError(4, 0, 0, "Failed to open '%s' for '$FO_OVERWRITE'", $sAu3FileName); Failed to open filehandle with Append \overwrite
 		; Append Opt options
 		; if $opt....
 		; Append LazyLoded content if we are using AO
@@ -92,18 +94,18 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 		FileClose($fHandle)
 
 		; Force delete file
-		Local $timer = TimerInit()
-		Do
-			FileDelete($sAu3FileName)
-		Until Not FileExists($sAu3FileName) Or TimerDiff($timer) > 750
-	EndIf
+	;	Local $timer = TimerInit()
+	;	Do
+	;		FileDelete($sAu3FileName)
+	;	Until Not FileExists($sAu3FileName) Or TimerDiff($timer) > 750
+	;EndIf
 
 	; Just copy the file, whatever
-	If Not FileExists($sAu3FileName) Then
-		FileCopy($sAu3FileName_TMP, $sAu3FileName, $FO_OVERWRITE)
-	EndIf
+	;FileCopy($sAu3FileName_TMP, $sAu3FileName, $FO_OVERWRITE)
 
-	Local $aRet = [$sAu3FileName, $sAu3FileName_TMP, $sFileName, $oProject]
+
+	;Local $aRet = [$sAu3FileName, $sAu3FileName_TMP, $sFileName, $oProject]
+	Local $aRet = [$sAu3FileName, $sFileName, $oProject]
 	Return $aRet
 EndFunc
 
@@ -132,7 +134,7 @@ Func _TS_ParseFile(ByRef $sFileName, ByRef $sBuffer, $sPrevFileName = False)
 	_SmartCache_getFileStatus($sFileName)
 
 	; Where we store global variables (including namespace)
-	Local $sGlobalProps = ""
+
 
 	Switch $_SMARTCACHE_FILE_STATE
 		Case $_SMARTCACHE_FILE_NOT_CACHED, $_SMARTCACHE_FILE_MODIFIED
@@ -146,6 +148,7 @@ Func _TS_ParseFile(ByRef $sFileName, ByRef $sBuffer, $sPrevFileName = False)
 			Local $aAliasNamespaces  = _TS_Func_getNamespaceAlias($sCurrentFileBuffer); new (Should be unique for each file) ; This will run for EVERY file
 
 			; Parse regular Globals, including namespaces
+			Local $sGlobalProps = ""
 			_TS_GlobalVariable_Parse($sGlobalProps, $sCurrentFileBuffer, $oNamespace)
 
 			If _TS_Error() Then Return
@@ -154,6 +157,9 @@ Func _TS_ParseFile(ByRef $sFileName, ByRef $sBuffer, $sPrevFileName = False)
 			$_resource_iFileId+=1;Incr file id
 			_TS_Compose($sCurrentFileBuffer, $oPrev, $oNamespace, $sFileName, $aAliasNamespaces, $sCurFileBuffer) ; Null parent + izGlobal
 			_TS_File_setNamespace_global($sCurFileBuffer); Go thru all namespaces and replace them for this file ( All namespaces catched on first file)
+
+			; Apply global stuff here..
+			$sCurFileBuffer = $sGlobalProps & @CRLF & $sCurFileBuffer
 
 			Switch $_SMARTCACHE_FILE_STATE
 				Case $_SMARTCACHE_FILE_NOT_CACHED
@@ -167,7 +173,9 @@ Func _TS_ParseFile(ByRef $sFileName, ByRef $sBuffer, $sPrevFileName = False)
 	EndSwitch
 
 	; Save global props and content
-	$sBuffer &= $sGlobalProps & @CRLF & $sCurFileBuffer
+
+	$sBuffer &= $sCurFileBuffer
+
 	$sCurFileBuffer = ""; reset for the current file
 
 	; Update lazyload when file is complete

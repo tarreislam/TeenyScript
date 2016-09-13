@@ -29,14 +29,14 @@ Func _TS_HOTKEY_RUN()
 	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] $sAu3Filename_tmp, [2] = $sTsFileName, [3] = $oProject
 	If Not IsArray($aFile) Then Return False
 	Local Const $sAu3FileName = $aFile[0]
-	Local Const $sAu3Filename_tmp = $aFile[1]
-	Local Const $sTsFileName = $aFile[2]
-	Local Const $oProject = $aFile[3]
+	;Local Const $sAu3Filename_tmp = $aFile[1]
+	Local Const $sTsFileName = $aFile[1]
+	Local Const $oProject = $aFile[2]
 
 	If IsObj($oProject) Then _TS_Project_VCS($oProject)
 
 	; display da file
-	_Scite_runFile($sAu3FileName, $sTsFileName)
+	_Scite_runFile($sAu3FileName, $sTsFileName, True); Delete at runtime
 
 EndFunc
 
@@ -45,13 +45,17 @@ Func _TS_HOTKEY_BUILD_AU3()
 	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] $sAu3Filename_tmp, [2] = $sTsFileName, [3] = $oProject
 	If Not IsArray($aFile) Then Return False
 	Local Const $sAu3FileName = $aFile[0]
-	Local Const $sAu3Filename_tmp = $aFile[1]
-	Local Const $sTsFileName = $aFile[2]
-	Local Const $oProject = $aFile[3]
+	;Local Const $sAu3Filename_tmp = $aFile[1]
+	Local Const $sTsFileName = $aFile[1]
+	Local Const $oProject = $aFile[2]
 
 	If IsObj($oProject) Then _TS_Project_VCS($oProject); Run Version Control System
 
 	$ConsoleWrite("Conversion from '%s' -> '%s' was successful!", "g", $sTsFileName, $sAu3FileName)
+
+	; Open file
+	_Scite_OpenFile($sAu3FileName)
+
 
 EndFunc
 
@@ -60,10 +64,9 @@ Func _TS_HOTKEY_BUILD_EXE()
 	Local $aFile = _TS_YeahDnoWhatThisShouldbeNamed();[0] = $sAu3FileName, [1] $sAu3Filename_tmp, [2] = $sTsFileName, [3] = $oProject
 	If Not IsArray($aFile) Then Return False
 	Local Const $sAu3FileName = $aFile[0]
-	Local Const $sAu3Filename_tmp = $aFile[1]
-	Local Const $sTsFileName = $aFile[2]
-	Local Const $oProject = $aFile[3]
-
+	;Local Const $sAu3Filename_tmp = $aFile[1]
+	Local Const $sTsFileName = $aFile[1]
+	Local Const $oProject = $aFile[2]
 
 
 	If IsObj($oProject) Then
@@ -75,7 +78,7 @@ Func _TS_HOTKEY_BUILD_EXE()
 			_TS_Project_createLauncher($oProject)
 		EndIf
 
-		_SciTe_compileFile($sAu3Filename_tmp, _
+		_SciTe_compileFile($sAu3FileName, _
 		$oProject.dir, _
 		False, _
 		$oProject.icon, _
@@ -86,11 +89,12 @@ Func _TS_HOTKEY_BUILD_EXE()
 		$oProject.type)
 	Else
 		; Copy file and parse then delete if we dont have project settings
-		FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
+		;FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
 		_SciTe_compileFile($sAu3FileName)
-		FileDelete($sAu3FileName)
-	EndIf
 
+	EndIf
+	; Delete after we done
+	FileDelete($sAu3FileName)
 EndFunc
 
 Func _TS_HOTKEY_SET_OPT()
