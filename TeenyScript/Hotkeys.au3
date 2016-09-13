@@ -36,7 +36,7 @@ Func _TS_HOTKEY_RUN()
 	If IsObj($oProject) Then _TS_Project_VCS($oProject)
 
 	; display da file
-	_Scite_runFile($sAu3Filename_tmp, $sTsFileName)
+	_Scite_runFile($sAu3FileName, $sTsFileName)
 
 EndFunc
 
@@ -50,10 +50,6 @@ Func _TS_HOTKEY_BUILD_AU3()
 	Local Const $oProject = $aFile[3]
 
 	If IsObj($oProject) Then _TS_Project_VCS($oProject); Run Version Control System
-	; Copy the file we parsed from the tmp dir if not in full cache mode
-	If Not $_SMARTCACHE_PERFECT_CACHE Then
-		FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
-	EndIf
 
 	$ConsoleWrite("Conversion from '%s' -> '%s' was successful!", "g", $sTsFileName, $sAu3FileName)
 
@@ -68,8 +64,6 @@ Func _TS_HOTKEY_BUILD_EXE()
 	Local Const $sTsFileName = $aFile[2]
 	Local Const $oProject = $aFile[3]
 
-	; Copy file and parse then delete
-	FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
 
 
 	If IsObj($oProject) Then
@@ -81,7 +75,7 @@ Func _TS_HOTKEY_BUILD_EXE()
 			_TS_Project_createLauncher($oProject)
 		EndIf
 
-		_SciTe_compileFile($sAu3FileName, _
+		_SciTe_compileFile($sAu3Filename_tmp, _
 		$oProject.dir, _
 		False, _
 		$oProject.icon, _
@@ -91,10 +85,12 @@ Func _TS_HOTKEY_BUILD_EXE()
 		$oProject.copyright, _
 		$oProject.type)
 	Else
+		; Copy file and parse then delete if we dont have project settings
+		FileCopy($sAu3Filename_tmp, $sAu3FileName, $FC_OVERWRITE)
 		_SciTe_compileFile($sAu3FileName)
+		FileDelete($sAu3FileName)
 	EndIf
 
-	FileDelete($sAu3FileName)
 EndFunc
 
 Func _TS_HOTKEY_SET_OPT()

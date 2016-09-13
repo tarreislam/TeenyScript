@@ -90,6 +90,17 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 		FileWrite($fHandle, $sBuffer);
 		FileWriteLine($fHandle, $_resource_ffDebug); Write the DEBUG data (ONLY on RUN)
 		FileClose($fHandle)
+
+		; Force delete file
+		Local $timer = TimerInit()
+		Do
+			FileDelete($sAu3FileName)
+		Until Not FileExists($sAu3FileName) Or TimerDiff($timer) > 750
+	EndIf
+
+	; Just copy the file, whatever
+	If Not FileExists($sAu3FileName) Then
+		FileCopy($sAu3FileName_TMP, $sAu3FileName, $FO_OVERWRITE)
 	EndIf
 
 	Local $aRet = [$sAu3FileName, $sAu3FileName_TMP, $sFileName, $oProject]
