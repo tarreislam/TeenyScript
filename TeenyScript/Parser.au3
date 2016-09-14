@@ -765,11 +765,7 @@ Func _TS_Compose($sFileBuffer, ByRef $oPrev, ByRef $oNamespace, ByRef $sFileName
 			;| Check if we are assigning this class with a constructor
 			;|--------------------------
 			If IsObj($oCur.oConstructor) Then
-				Local $sStrippedParams = ""
-				Local $aStrippedParams = StringRegExp($oCur.C_params, "(?i)\$" & $re_AcceptedVarName, 3)
-				If IsArray($aStrippedParams) Then
-					$sStrippedParams = _ArrayToString($aStrippedParams, ",")
-				EndIf
+				Local $sStrippedParams = StringRegExpReplace($oCur.C_params, "(?i)\=[^,]+", ""); Remove optional parameters
 				$sContentSuffix = StringFormat("Return $%s.Object.%s(%s)", $_name_AOClass, $oCur.oConstructor.CleanName, $sStrippedParams)
 			Else
 				$sContentSuffix = StringFormat("Return $%s.Object", $_name_AOClass)
