@@ -689,8 +689,9 @@ Func _TS_Compose($sFileBuffer, ByRef $oPrev, ByRef $oNamespace, ByRef $sFileName
 				_TS_Func_Compose_Class_Extension_Construct($oCur, $oChildrenOfCur, $sContent, $sParentFunctionNamePrefix)
 			Else
 				; Since its not a class. StringRegexpReplace is used.
-				$sContent &= StringRegExpReplace($oCur.content, $re_func_getNested, StringFormat("Local $2 %s%s_$3$7", $sParentFunctionNamePrefix, $oCur.cleanName))
 				_TS_Compose_Features($oCur, $aAliasNamespaces, $oNamespace, $oPrev, $sCurFileBuffer)
+				$sContent &= StringRegExpReplace($oCur.content, $re_func_getNested, StringFormat("Local $2 %s%s_$3$7", $sParentFunctionNamePrefix, $oCur.cleanName))
+
 			EndIf
 
 		Else ; No children. Just run the feature method

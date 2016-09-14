@@ -27,7 +27,7 @@
 ; ~ TS related resources
 Global $_AutoitExe, $_HWND
 Global Const $_TS_AppTitle = "TeenyScript"
-Global Const $_TS_AppVer = "2.1.2";Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
+Global Const $_TS_AppVer = "2.1.3";Do not edit these because they will be used for version-checking your project against the version of TS you are running and will also be compiled along with Autoits version
 Global Const $_TS_FullAppTitle = StringFormat("%s %s", $_TS_AppTitle, $_TS_AppVer)
 Global Const $_TS_OptFile = @ScriptDir & "\TS.opt.ini"
 Global Const $_TS_TeenyScript_DIR = @ScriptDir & "\TeenyScript"
