@@ -155,7 +155,7 @@ Global Const $re_list_ClassProp = '^\{(.*)\}$'
 
 Global Const $re_TS_parameter = "(?i)\h*(class|extension|construct)\h*(?:[,]+|)\h*(.*)"
 Global Const $re_TS_fileExt = '(?i)\\.*(\.ts\.au3)$' ; Will only detect when file ends with .ts.au3
-Global Const $re_TS_Include = '(?i)\#include\h*(?:\<|\")([a-z0-9_ \\\/]+((?:[\*]{0,2}|)\.ts|\.au3))\h*(?:\>|\")'; #include detection
+Global Const $re_TS_Include = '(?i)\#include\h*(?:\<|\")([a-z0-9_ \\\/\-]+((?:[\*]{0,2}|)\.ts|\.au3))\h*(?:\>|\")'; #include detection
 Global Const $re_TS_Debug = '(?si)#DEBUG(.+)'; This will copy raw after #DEBUG (Will not be included when BUILDING au3 or .exe)
 
 ;  ---------------------------------------------------------
