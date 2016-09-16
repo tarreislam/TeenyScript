@@ -89,6 +89,7 @@ Func _TS_Compile($sFileName);[0] = $sAu3FileName, [1] = $sFileName
 		If $_resource_bLazyLoad Then
 			FileWrite($fHandle, $_TS_LazyLoadedContent)
 		EndIf
+		FileWrite($fHandle, $_TS_LazyLoadedHeader)
 		FileWrite($fHandle, $sBuffer);
 		FileWriteLine($fHandle, $_resource_ffDebug); Write the DEBUG data (ONLY on RUN)
 		FileClose($fHandle)

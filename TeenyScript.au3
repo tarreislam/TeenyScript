@@ -44,7 +44,6 @@ Opt("GUIOnEventMode",1)
 #include "TeenyScript\Project.au3"
 #include "TeenyScript\GuiOpt.au3"
 
-
 _TS_Init()
 
 While Sleep(0)

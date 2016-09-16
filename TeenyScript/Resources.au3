@@ -86,6 +86,7 @@ Global Const $_TS_Project_LazyLoaded_Template = _TS_LazyLoad($_TS_Project_Templa
 ; AutoitObject
 Global Const $_TS_LazyLoadDependencies = [$_TS_Dependencies_Dir & "\AutoItObject.au3", $_TS_Dependencies_Dir & "\CustomInit.au3"]
 Global Const $_TS_LazyLoadedContent = _TS_LazyLoad($_TS_LazyLoadDependencies)
+Global Const $_TS_LazyLoadedHeader = _TS_LazyLoad($_TS_Dependencies_Dir & "\Header.au3")
 
 ; Hotkeys
 Global Const $_SCITE_HotkeyCollectionDisplayNames = [5, "Run script", "Build 'AU3'", "Build 'EXE'", "Options GUI", "Exit "&$_TS_AppTitle]
